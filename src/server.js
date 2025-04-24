@@ -34,30 +34,27 @@ try {
         key: privateKey,
         cert: certificate,
         ca: ca,
-        // Add additional SSL options
-        ciphers: 'HIGH:!aNULL:!MD5',
-        honorCipherOrder: true,
-        requestCert: false,
+        // Simplified SSL options
         rejectUnauthorized: false,
-        // Add more secure options
-        secureOptions: require('constants').SSL_OP_NO_SSLv3 | require('constants').SSL_OP_NO_TLSv1,
-        // Add error handling
-        sessionTimeout: 300,
-        ticketKeys: Buffer.from('01234567890123456789012345678901', 'hex')
+        // Enable debug logging
+        debug: true
     };
 
     // Create HTTPS server if certificates exist
     httpsServer = https.createServer(credentials, app);
     
-    // Add error handling for the HTTPS server
-    httpsServer.on('error', (err) => {
-        console.error('HTTPS Server Error:', err);
+    // Add connection event handlers
+    httpsServer.on('connection', (socket) => {
+        console.log('New connection established');
+        socket.on('error', (err) => {
+            console.error('Socket error:', err);
+        });
     });
     
-    httpsServer.on('clientError', (err, socket) => {
-        console.error('HTTPS Client Error:', err);
-        if (!socket.writable) return;
-        socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+    httpsServer.on('secureConnection', (tlsSocket) => {
+        console.log('Secure connection established');
+        console.log('Protocol:', tlsSocket.getProtocol());
+        console.log('Cipher:', tlsSocket.getCipher());
     });
     
     console.log('SSL certificates found and validated, HTTPS server will be started');
@@ -143,6 +140,12 @@ app.get('/generate', async (req, res) => {
     console.error('Error generating collage:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Add basic route for testing
+app.get('/', (req, res) => {
+    console.log('Received request');
+    res.send('Hello from HTTPS server!');
 });
 
 // Start servers

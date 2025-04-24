@@ -42,41 +42,23 @@ try {
         key: privateKey,
         cert: certificate,
         ca: ca,
-        rejectUnauthorized: false,
-        // Add keep-alive settings
-        keepAlive: true,
-        keepAliveInitialDelay: 0,
-        // Add timeout settings
-        timeout: 5000,
-        // Enable debug logging
-        debug: true
+        // Minimal SSL options
+        rejectUnauthorized: false
     };
 
     // Create HTTPS server if certificates exist
     httpsServer = https.createServer(credentials, app);
     
-    // Add connection event handlers
-    httpsServer.on('connection', (socket) => {
-        console.log('New connection established');
-        if (socket instanceof net.Socket) {
-            socket.setKeepAlive(true, 5000);
-            socket.setTimeout(5000);
-        }
-        
-        socket.on('error', (err) => {
-            console.error('Socket error:', err);
-        });
-        
-        socket.on('timeout', () => {
-            console.log('Socket timeout');
-            socket.end();
-        });
+    // Add error handling
+    httpsServer.on('error', (err) => {
+        console.error('HTTPS Server Error:', err);
     });
     
-    httpsServer.on('secureConnection', (tlsSocket) => {
-        console.log('Secure connection established');
-        console.log('Protocol:', tlsSocket.getProtocol());
-        console.log('Cipher:', tlsSocket.getCipher());
+    httpsServer.on('clientError', (err, socket) => {
+        console.error('HTTPS Client Error:', err);
+        if (socket.writable) {
+            socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+        }
     });
     
     console.log('SSL certificates found and validated, HTTPS server will be started');
@@ -168,6 +150,7 @@ app.get('/generate', async (req, res) => {
 app.get('/', (req, res) => {
     console.log('Received request');
     res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Connection', 'close');
     res.send('Hello from HTTPS server!');
 });
 
@@ -180,7 +163,10 @@ httpServer.listen(HTTP_PORT, () => {
 });
 
 if (httpsServer) {
-    httpsServer.listen(HTTPS_PORT, () => {
+    httpsServer.listen({
+        port: HTTPS_PORT,
+        host: '0.0.0.0'
+    }, () => {
         console.log(`HTTPS Server running on port ${HTTPS_PORT}`);
     });
 }

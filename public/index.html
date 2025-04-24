@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pi-Collage Generator</title>
+    <link rel="icon" type="image/png" href="/pi-co.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .title-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .title-container img {
+            width: 50px;
+            height: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            text-align: center;
+            padding: 10px;
+            background: white;
+        }
+        #result canvas {
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+        }
+        .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .size-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .size-inputs input {
+            width: 80px;
+            text-align: center;
+        }
+        .size-inputs span {
+            font-size: 1.2em;
+            color: #666;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .save-btn {
+            background-color: #28a745;
+        }
+        .save-btn:hover {
+            background-color: #218838;
+        }
+        .copy-btn {
+            background-color: #6c757d;
+        }
+        .copy-btn:hover {
+            background-color: #5a6268;
+        }
+        .api-url-container {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .api-url-input {
+            font-family: monospace;
+            font-size: 0.9em;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px;
+            margin-bottom: 5px;
+        }
+        .copy-message {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+        .url-format-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .url-format-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .url-format-option input[type="radio"] {
+            margin: 0;
+            width: auto;
+        }
+        .url-format-option label {
+            margin: 0;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .content-group {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .content-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .content-group-header h3 {
+            margin: 0;
+            font-size: 1em;
+            color: #666;
+        }
+        .content-group-header button {
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+        .transformations {
+            margin-top: 10px;
+        }
+        .transformation-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .transformation-row select {
+            width: 120px;
+        }
+        .transformation-row input {
+            flex: 1;
+        }
+        .transformation-row button {
+            padding: 5px 10px;
+            background-color: #dc3545;
+        }
+        .transformation-row button:hover {
+            background-color: #c82333;
+        }
+        .add-transformation-btn {
+            width: 100%;
+            margin-top: 5px;
+            background-color: #6c757d;
+        }
+        .add-transformation-btn:hover {
+            background-color: #5a6268;
+        }
+        .add-content-group-btn {
+            width: 100%;
+            margin-top: 10px;
+            background-color: #28a745;
+        }
+        .add-content-group-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        <img src="/pi-co.png" alt="Dyno Logo">
+        <h1><span style="color: #ada08a;">pi-</span>Collage Generator</h1>
+    </div>
+
+    <div class="api-url-container">
+        <label for="apiUrl">IMAGE URL : <span id="baseUrl" style="font-family: monospace;"></span></label>
+        <input type="text" id="compressedParam" class="api-url-input" style="flex: 1;">
+        <div class="controls">
+            <button class="copy-btn" onclick="pasteFromClipboard()">Paste URL from Clipboard</button>
+            <button class="copy-btn" onclick="copyApiUrl()">Copy URL to Clipboard</button>
+        </div>
+        <div id="copyMessage" class="copy-message">URL copied to clipboard!</div>
+    </div>
+
+    <div id="result">
+        <canvas id="collageCanvas"></canvas>
+        <div class="controls">
+            <button class="save-btn" onclick="saveCanvas()">Save Image</button>
+        </div>
+    </div>
+    
+    <form id="collageForm" onsubmit="return false;">
+        <div class="form-group">
+            <label>Size:</label>
+            <div class="size-inputs">
+                <input type="number" id="width" value="300">
+                <span>×</span>
+                <input type="number" id="height" value="300">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Content Instructions:</label>
+            <div id="contentGroups">
+                <!-- Content groups will be added here -->
+            </div>
+            <button type="button" class="add-content-group-btn" onclick="addContentGroup()">Add Content Group</button>
+            <div class="help-text">
+                For text: text://Your text<br>
+                For images: https://example.com/image.png<br>
+                Available styles: position, scale, rotate, font-size
+            </div>
+        </div>
+    </form>
+
+    <script src="/dyno-collage.js"></script>
+    <script src="/lz-string.min.js"></script>
+    <script>
+        const canvas = document.getElementById('collageCanvas');
+        const baseUrlLabel = document.getElementById('baseUrl');
+        const compressedParamInput = document.getElementById('compressedParam');
+        const copyMessage = document.getElementById('copyMessage');
+        const defaultErrorImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZTZlNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSJyZWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkdlbmVyYXRpb24gRmFpbGVkPC90ZXh0Pjwvc3ZnPg==';
+
+        // Set the base URL on page load
+        baseUrlLabel.textContent = `${window.location.origin}/generate/`;
+
+        function addTransformationRow(container, style = '', value = '') {
+            const row = document.createElement('div');
+            row.className = 'transformation-row';
+            
+            const select = document.createElement('select');
+            ['position', 'scale', 'rotate', 'font-size'].forEach(optionStyle => {
+                const option = document.createElement('option');
+                option.value = optionStyle;
+                option.textContent = optionStyle;
+                if (optionStyle === style) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Value';
+            input.value = value;
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = () => {
+                row.remove();
+                generateCollage();
+                updateApiUrl();
+            };
+            
+            row.appendChild(select);
+            row.appendChild(input);
+            row.appendChild(deleteBtn);
+            container.appendChild(row);
+        }
+
+        function addContentGroup(content = '', transformations = []) {
+            const group = document.createElement('div');
+            group.className = 'content-group';
+            
+            const header = document.createElement('div');
+            header.className = 'content-group-header';
+            
+            const title = document.createElement('h3');
+            title.textContent = 'Content Group';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = 'Delete Group';
+            deleteBtn.onclick = () => {
+                group.remove();
+                generateCollage();
+                updateApiUrl();
+            };
+            
+            header.appendChild(title);
+            header.appendChild(deleteBtn);
+            
+            const contentInput = document.createElement('input');
+            contentInput.type = 'text';
+            contentInput.placeholder = 'text://Your text or image URL';
+            contentInput.className = 'content-input';
+            contentInput.value = content;
+            
+            const transformationsContainer = document.createElement('div');
+            transformationsContainer.className = 'transformations';
+            
+            const addTransformationBtn = document.createElement('button');
+            addTransformationBtn.type = 'button';
+            addTransformationBtn.className = 'add-transformation-btn';
+            addTransformationBtn.textContent = 'Add Transformation';
+            addTransformationBtn.onclick = () => addTransformationRow(transformationsContainer);
+            
+            group.appendChild(header);
+            group.appendChild(contentInput);
+            group.appendChild(transformationsContainer);
+            group.appendChild(addTransformationBtn);
+            
+            document.getElementById('contentGroups').appendChild(group);
+            
+            // Add transformations if provided
+            if (transformations.length > 0) {
+                transformations.forEach(({ style, value }) => {
+                    addTransformationRow(transformationsContainer, style, value);
+                });
+            } else {
+                addTransformationRow(transformationsContainer);
+            }
+        }
+
+        function getContentString() {
+            const groups = document.querySelectorAll('.content-group');
+            return Array.from(groups).map(group => {
+                const content = group.querySelector('.content-input').value;
+                const transformations = Array.from(group.querySelectorAll('.transformation-row'))
+                    .map(row => {
+                        const style = row.querySelector('select').value;
+                        const value = row.querySelector('input').value;
+                        return `${style} ${value}`;
+                    })
+                    .join(';');
+                return `${content}${transformations ? ';' + transformations : ''}`;
+            }).join('\n');
+        }
+
+        function updateApiUrl() {
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const content = getContentString();
+            
+            const compressedParams = LZString.compressToEncodedURIComponent(JSON.stringify([width, height, content]));
+            compressedParamInput.value = compressedParams;
+        }
+
+        async function generateCollage() {
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const content = getContentString();
+            
+            try {
+                await window.dynoCollage.generateCollage(
+                    canvas,
+                    { width: parseInt(width), height: parseInt(height) },
+                    content.split('\n').filter(line => line.trim())
+                );
+                updateApiUrl();
+            } catch (error) {
+                console.error('Generation failed:', error);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffe6e6';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '12px Arial';
+                ctx.fillText('Generation Failed', canvas.width/2, canvas.height/2);
+            }
+        }
+
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download = 'collage.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        async function copyApiUrl() {
+            try {
+                let fullUrl = compressedParamInput.value;
+                if (!fullUrl.startsWith('http')) {
+                    fullUrl = baseUrlLabel.textContent + fullUrl;
+                }
+                await navigator.clipboard.writeText(fullUrl);
+                copyMessage.style.display = 'block';
+                setTimeout(() => {
+                    copyMessage.style.display = 'none';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        }
+
+        async function pasteFromClipboard() {
+            try {
+                const clipboardText = await navigator.clipboard.readText();
+                let compressedParam = clipboardText;
+                
+                // If the text starts with http, extract the compressed parameter part
+                if (compressedParam.startsWith('http')) {
+                    const lastSlashIndex = compressedParam.lastIndexOf('/');
+                    if (lastSlashIndex !== -1) {
+                        compressedParam = compressedParam.substring(lastSlashIndex + 1);
+                    }
+                }
+
+                // Update the compressed parameter input
+                compressedParamInput.value = compressedParam;
+
+                try {
+                    // Try to decompress and update the form
+                    const decompressed = LZString.decompressFromEncodedURIComponent(compressedParam);
+                    if (decompressed) {
+                        const [width, height, content] = JSON.parse(decompressed);
+                        
+                        // Update width and height
+                        document.getElementById('width').value = width;
+                        document.getElementById('height').value = height;
+                        
+                        // Clear existing content groups
+                        const contentGroups = document.getElementById('contentGroups');
+                        contentGroups.innerHTML = '';
+                        
+                        // Parse and add content groups
+                        const contentLines = content.split('\n').filter(line => line.trim());
+                        contentLines.forEach(line => {
+                            const [content, ...transformations] = line.split(';');
+                            const transformPairs = transformations.map(t => {
+                                const [style, value] = t.trim().split(' ');
+                                return { style, value };
+                            });
+                            addContentGroup(content, transformPairs);
+                        });
+                        
+                        // Generate the collage with the new values
+                        generateCollage();
+                    }
+                } catch (error) {
+                    console.error('Failed to parse clipboard content:', error);
+                }
+            } catch (err) {
+                console.error('Failed to read clipboard:', err);
+            }
+        }
+
+        // Add event listeners to all form inputs
+        const formInputs = document.querySelectorAll('#width, #height');
+        formInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                clearTimeout(input.debounceTimer);
+                input.debounceTimer = setTimeout(() => {
+                    generateCollage();
+                    updateApiUrl();
+                }, 500);
+            });
+        });
+
+        // Add event listener for content changes
+        document.addEventListener('input', (e) => {
+            if (e.target.matches('.content-input, .transformation-row input, .transformation-row select')) {
+                clearTimeout(e.target.debounceTimer);
+                e.target.debounceTimer = setTimeout(() => {
+                    generateCollage();
+                    updateApiUrl();
+                }, 500);
+            }
+        });
+
+        // Initial setup
+        // Add first default content group (Welcome text)
+        addContentGroup('text://name is Cow-ok', [
+            { style: 'position', value: '20.3,25' },
+            { style: 'font-size', value: '24' },
+            { style: 'rotate', value: '-5' }
+        ]);
+
+        // Add second default content group (Image)
+        addContentGroup('https://images.freeimages.com/image/previews/30b/charming-farm-animal-png-illustration-5696290.png', [
+            { style: 'position', value: '14,30' },
+            { style: 'scale', value: '0.4' }
+        ]);
+
+        generateCollage();
+    </script>
+</body>
+</html> 

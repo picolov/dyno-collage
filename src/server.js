@@ -35,7 +35,7 @@ try {
 
 // Create the server
 const server = Bun.serve({
-    port: process.env.PORT || 8080,
+    port: process.env.PORT || (tls ? 8443 : 8080),
     tls,
     async fetch(req) {
         const url = new URL(req.url);

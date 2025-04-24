@@ -5,8 +5,16 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
+const net = require('net');
 
 const app = express();
+
+// Enable keep-alive
+app.use((req, res, next) => {
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Keep-Alive', 'timeout=5, max=1000');
+    next();
+});
 
 // Check for SSL certificate files
 const domain = 'picolov.com';
@@ -34,8 +42,12 @@ try {
         key: privateKey,
         cert: certificate,
         ca: ca,
-        // Simplified SSL options
         rejectUnauthorized: false,
+        // Add keep-alive settings
+        keepAlive: true,
+        keepAliveInitialDelay: 0,
+        // Add timeout settings
+        timeout: 5000,
         // Enable debug logging
         debug: true
     };
@@ -46,8 +58,18 @@ try {
     // Add connection event handlers
     httpsServer.on('connection', (socket) => {
         console.log('New connection established');
+        if (socket instanceof net.Socket) {
+            socket.setKeepAlive(true, 5000);
+            socket.setTimeout(5000);
+        }
+        
         socket.on('error', (err) => {
             console.error('Socket error:', err);
+        });
+        
+        socket.on('timeout', () => {
+            console.log('Socket timeout');
+            socket.end();
         });
     });
     
@@ -145,6 +167,7 @@ app.get('/generate', async (req, res) => {
 // Add basic route for testing
 app.get('/', (req, res) => {
     console.log('Received request');
+    res.setHeader('Content-Type', 'text/plain');
     res.send('Hello from HTTPS server!');
 });
 

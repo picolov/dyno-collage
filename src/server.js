@@ -3,9 +3,36 @@ const { generateCollage } = require('./index');
 const LZString = require('./lz-string.min');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
+const https = require('https');
 
 const app = express();
-const port = 3000;
+
+// Check for SSL certificate files
+const domain = 'picolov.com'; // Replace with your domain
+const certPath = `/etc/letsencrypt/live/${domain}`;
+let httpsServer = null;
+
+try {
+    const privateKey = fs.readFileSync(`${certPath}/privkey.pem`, 'utf8');
+    const certificate = fs.readFileSync(`${certPath}/cert.pem`, 'utf8');
+    const ca = fs.readFileSync(`${certPath}/chain.pem`, 'utf8');
+
+    const credentials = {
+        key: privateKey,
+        cert: certificate,
+        ca: ca
+    };
+
+    // Create HTTPS server if certificates exist
+    httpsServer = https.createServer(credentials, app);
+    console.log('SSL certificates found, HTTPS server will be started');
+} catch (error) {
+    console.log('SSL certificates not found, only HTTP server will be started');
+}
+
+// Create HTTP server
+const httpServer = http.createServer(app);
 
 // Serve static files from the public directory
 app.use(express.static('public'));
@@ -83,7 +110,16 @@ app.get('/generate', async (req, res) => {
   }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-}); 
+// Start servers
+const HTTP_PORT = process.env.PORT || 8080;
+const HTTPS_PORT = process.env.HTTPS_PORT || 8443;
+
+httpServer.listen(HTTP_PORT, () => {
+    console.log(`HTTP Server running on port ${HTTP_PORT}`);
+});
+
+if (httpsServer) {
+    httpsServer.listen(HTTPS_PORT, () => {
+        console.log(`HTTPS Server running on port ${HTTPS_PORT}`);
+    });
+}

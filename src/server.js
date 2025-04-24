@@ -24,7 +24,10 @@ try {
     tls = {
         key: Bun.file(`${certPath}/privkey.pem`),
         cert: Bun.file(`${certPath}/cert.pem`),
-        ca: Bun.file(`${certPath}/chain.pem`)
+        ca: Bun.file(`${certPath}/chain.pem`),
+        // More permissive TLS settings
+        rejectUnauthorized: false,
+        requestCert: false
     };
     
     console.log('SSL certificates found and validated, HTTPS server will be started');
@@ -38,104 +41,123 @@ const server = Bun.serve({
     port: process.env.PORT || (tls ? 8443 : 8080),
     tls,
     async fetch(req) {
-        const url = new URL(req.url);
-        
-        // Handle static files
-        if (url.pathname === '/dyno-collage.js') {
-            return new Response(Bun.file(path.join(__dirname, 'dyno-collage.js')), {
-                headers: { 'Content-Type': 'application/javascript' }
-            });
-        }
-        
-        if (url.pathname === '/lz-string.min.js') {
-            return new Response(Bun.file(path.join(__dirname, 'lz-string.min.js')), {
-                headers: { 'Content-Type': 'application/javascript' }
-            });
-        }
-        
-        // Handle compressed parameters in URL path
-        if (url.pathname.startsWith('/generate/')) {
-            try {
-                const compressedParams = url.pathname.split('/generate/')[1];
-                const params = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedParams));
-                const width = parseInt(String(params[0] || '200'));
-                const height = parseInt(String(params[1] || '200'));
-                const content = String(params[2] || '').split('\n').filter(line => line.trim());
-                
-                if (!width || !height || !content.length) {
-                    return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
+        try {
+            console.log('Received request:', req.method, req.url);
+            
+            const url = new URL(req.url);
+            
+            // Handle static files
+            if (url.pathname === '/dyno-collage.js') {
+                const file = Bun.file(path.join(__dirname, 'dyno-collage.js'));
+                if (!await file.exists()) {
+                    throw new Error('File not found: dyno-collage.js');
                 }
-                
-                const imageBuffer = await generateCollage({ width, height }, content);
-                
-                return new Response(imageBuffer, {
-                    headers: {
-                        'Content-Type': 'image/png',
-                        'Content-Disposition': 'inline; filename=collage.png'
-                    }
-                });
-            } catch (error) {
-                console.error('Error generating collage:', error);
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                return new Response(file, {
+                    headers: { 'Content-Type': 'application/javascript' }
                 });
             }
-        }
-        
-        // Handle uncompressed parameters as query parameters
-        if (url.pathname === '/generate') {
-            try {
-                const width = parseInt(String(url.searchParams.get('width') || '200'));
-                const height = parseInt(String(url.searchParams.get('height') || '200'));
-                const content = String(url.searchParams.get('content') || '').split('\n').filter(line => line.trim());
-                
-                if (!width || !height || !content.length) {
-                    return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
+            
+            if (url.pathname === '/lz-string.min.js') {
+                const file = Bun.file(path.join(__dirname, 'lz-string.min.js'));
+                if (!await file.exists()) {
+                    throw new Error('File not found: lz-string.min.js');
                 }
-                
-                const imageBuffer = await generateCollage({ width, height }, content);
-                
-                return new Response(imageBuffer, {
-                    headers: {
-                        'Content-Type': 'image/png',
-                        'Content-Disposition': 'inline; filename=collage.png'
-                    }
-                });
-            } catch (error) {
-                console.error('Error generating collage:', error);
-                return new Response(JSON.stringify({ error: error.message }), {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                return new Response(file, {
+                    headers: { 'Content-Type': 'application/javascript' }
                 });
             }
-        }
-        
-        // Root route
-        if (url.pathname === '/') {
-            const indexPath = path.join(process.cwd(), 'public', 'index.html');
-            if (fs.existsSync(indexPath)) {
-                return new Response(Bun.file(indexPath), {
+            
+            // Root route
+            if (url.pathname === '/') {
+                const indexPath = path.join(process.cwd(), 'public', 'index.html');
+                const file = Bun.file(indexPath);
+                if (!await file.exists()) {
+                    throw new Error('File not found: index.html');
+                }
+                return new Response(file, {
                     headers: { 'Content-Type': 'text/html' }
                 });
             }
+            
+            // Handle compressed parameters in URL path
+            if (url.pathname.startsWith('/generate/')) {
+                try {
+                    const compressedParams = url.pathname.split('/generate/')[1];
+                    const params = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedParams));
+                    const width = parseInt(String(params[0] || '200'));
+                    const height = parseInt(String(params[1] || '200'));
+                    const content = String(params[2] || '').split('\n').filter(line => line.trim());
+                    
+                    if (!width || !height || !content.length) {
+                        return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
+                    const imageBuffer = await generateCollage({ width, height }, content);
+                    
+                    return new Response(imageBuffer, {
+                        headers: {
+                            'Content-Type': 'image/png',
+                            'Content-Disposition': 'inline; filename=collage.png'
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error generating collage:', error);
+                    return new Response(JSON.stringify({ error: error.message }), {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            }
+            
+            // Handle uncompressed parameters as query parameters
+            if (url.pathname === '/generate') {
+                try {
+                    const width = parseInt(String(url.searchParams.get('width') || '200'));
+                    const height = parseInt(String(url.searchParams.get('height') || '200'));
+                    const content = String(url.searchParams.get('content') || '').split('\n').filter(line => line.trim());
+                    
+                    if (!width || !height || !content.length) {
+                        return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                    
+                    const imageBuffer = await generateCollage({ width, height }, content);
+                    
+                    return new Response(imageBuffer, {
+                        headers: {
+                            'Content-Type': 'image/png',
+                            'Content-Disposition': 'inline; filename=collage.png'
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error generating collage:', error);
+                    return new Response(JSON.stringify({ error: error.message }), {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            }
+            
+            // Serve static files from public directory
+            const publicPath = path.join(process.cwd(), 'public', url.pathname);
+            const file = Bun.file(publicPath);
+            if (await file.exists() && !(await file).type.includes('directory')) {
+                return new Response(file);
+            }
+            
             return new Response('Not Found', { status: 404 });
+        } catch (error) {
+            console.error('Server error:', error);
+            return new Response(JSON.stringify({ error: error.message }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
-        
-        // Serve static files from public directory
-        const publicPath = path.join(process.cwd(), 'public', url.pathname);
-        if (fs.existsSync(publicPath) && !fs.lstatSync(publicPath).isDirectory()) {
-            return new Response(Bun.file(publicPath));
-        }
-        
-        // 404 for unknown routes
-        return new Response('Not Found', { status: 404 });
     },
     error(error) {
         console.error('Server Error:', error);

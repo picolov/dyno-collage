@@ -1,25 +1,12 @@
-const express = require('express');
 const { generateCollage } = require('./index');
 const LZString = require('./lz-string.min');
 const path = require('path');
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const net = require('net');
-
-const app = express();
-
-// Enable keep-alive
-app.use((req, res, next) => {
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Keep-Alive', 'timeout=5, max=1000');
-    next();
-});
 
 // Check for SSL certificate files
 const domain = 'picolov.com';
 const certPath = `/etc/letsencrypt/live/${domain}`;
-let httpsServer = null;
+let tls = null;
 
 try {
     // Verify certificate files exist and are readable
@@ -34,32 +21,11 @@ try {
         }
     }
 
-    const privateKey = fs.readFileSync(`${certPath}/privkey.pem`, 'utf8');
-    const certificate = fs.readFileSync(`${certPath}/cert.pem`, 'utf8');
-    const ca = fs.readFileSync(`${certPath}/chain.pem`, 'utf8');
-
-    const credentials = {
-        key: privateKey,
-        cert: certificate,
-        ca: ca,
-        // Minimal SSL options
-        rejectUnauthorized: false
+    tls = {
+        key: Bun.file(`${certPath}/privkey.pem`),
+        cert: Bun.file(`${certPath}/cert.pem`),
+        ca: Bun.file(`${certPath}/chain.pem`)
     };
-
-    // Create HTTPS server if certificates exist
-    httpsServer = https.createServer(credentials, app);
-    
-    // Add error handling
-    httpsServer.on('error', (err) => {
-        console.error('HTTPS Server Error:', err);
-    });
-    
-    httpsServer.on('clientError', (err, socket) => {
-        console.error('HTTPS Client Error:', err);
-        if (socket.writable) {
-            socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
-        }
-    });
     
     console.log('SSL certificates found and validated, HTTPS server will be started');
 } catch (error) {
@@ -67,106 +33,114 @@ try {
     console.log('Only HTTP server will be started');
 }
 
-// Create HTTP server
-const httpServer = http.createServer(app);
-
-// Serve static files from the public directory
-app.use(express.static('public'));
-
-// Serve the browser version of dyno-collage
-app.get('/dyno-collage.js', (req, res) => {
-  res.setHeader('Content-Type', 'application/javascript');
-  res.send(fs.readFileSync(path.join(__dirname, 'dyno-collage.js')));
-});
-
-// Serve the browser version of lz-string
-app.get('/lz-string.min.js', (req, res) => {
-  res.setHeader('Content-Type', 'application/javascript');
-  res.send(fs.readFileSync(path.join(__dirname, 'lz-string.min.js')));
-});
-
-// Handle compressed parameters in URL path
-app.get('/generate/:compressedParams', async (req, res) => {
-  try {
-    const params = JSON.parse(LZString.decompressFromEncodedURIComponent(req.params.compressedParams));
-    const width = parseInt(String(params[0] || '200'));
-    const height = parseInt(String(params[1] || '200'));
-    const content = String(params[2] || '').split('\n').filter(line => line.trim());
-    console.log('compressed content:',content);
-    // Validate parameters
-    if (!width || !height || !content.length) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+// Create the server
+const server = Bun.serve({
+    port: process.env.PORT || 8080,
+    tls,
+    async fetch(req) {
+        const url = new URL(req.url);
+        
+        // Handle static files
+        if (url.pathname === '/dyno-collage.js') {
+            return new Response(Bun.file(path.join(__dirname, 'dyno-collage.js')), {
+                headers: { 'Content-Type': 'application/javascript' }
+            });
+        }
+        
+        if (url.pathname === '/lz-string.min.js') {
+            return new Response(Bun.file(path.join(__dirname, 'lz-string.min.js')), {
+                headers: { 'Content-Type': 'application/javascript' }
+            });
+        }
+        
+        // Handle compressed parameters in URL path
+        if (url.pathname.startsWith('/generate/')) {
+            try {
+                const compressedParams = url.pathname.split('/generate/')[1];
+                const params = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedParams));
+                const width = parseInt(String(params[0] || '200'));
+                const height = parseInt(String(params[1] || '200'));
+                const content = String(params[2] || '').split('\n').filter(line => line.trim());
+                
+                if (!width || !height || !content.length) {
+                    return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                const imageBuffer = await generateCollage({ width, height }, content);
+                
+                return new Response(imageBuffer, {
+                    headers: {
+                        'Content-Type': 'image/png',
+                        'Content-Disposition': 'inline; filename=collage.png'
+                    }
+                });
+            } catch (error) {
+                console.error('Error generating collage:', error);
+                return new Response(JSON.stringify({ error: error.message }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+        }
+        
+        // Handle uncompressed parameters as query parameters
+        if (url.pathname === '/generate') {
+            try {
+                const width = parseInt(String(url.searchParams.get('width') || '200'));
+                const height = parseInt(String(url.searchParams.get('height') || '200'));
+                const content = String(url.searchParams.get('content') || '').split('\n').filter(line => line.trim());
+                
+                if (!width || !height || !content.length) {
+                    return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+                        status: 400,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                
+                const imageBuffer = await generateCollage({ width, height }, content);
+                
+                return new Response(imageBuffer, {
+                    headers: {
+                        'Content-Type': 'image/png',
+                        'Content-Disposition': 'inline; filename=collage.png'
+                    }
+                });
+            } catch (error) {
+                console.error('Error generating collage:', error);
+                return new Response(JSON.stringify({ error: error.message }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+        }
+        
+        // Root route
+        if (url.pathname === '/') {
+            const indexPath = path.join(process.cwd(), 'public', 'index.html');
+            if (fs.existsSync(indexPath)) {
+                return new Response(Bun.file(indexPath), {
+                    headers: { 'Content-Type': 'text/html' }
+                });
+            }
+            return new Response('Not Found', { status: 404 });
+        }
+        
+        // Serve static files from public directory
+        const publicPath = path.join(process.cwd(), 'public', url.pathname);
+        if (fs.existsSync(publicPath) && !fs.lstatSync(publicPath).isDirectory()) {
+            return new Response(Bun.file(publicPath));
+        }
+        
+        // 404 for unknown routes
+        return new Response('Not Found', { status: 404 });
+    },
+    error(error) {
+        console.error('Server Error:', error);
+        return new Response('Internal Server Error', { status: 500 });
     }
-
-    // Generate the collage
-    const imageBuffer = await generateCollage(
-      { width, height },
-      content
-    );
-
-    // Set response headers
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', 'inline; filename=collage.png');
-
-    // Send the image
-    res.send(imageBuffer);
-  } catch (error) {
-    console.error('Error generating collage:', error);
-    res.status(500).json({ error: error.message });
-  }
 });
 
-// Handle uncompressed parameters as query parameters
-app.get('/generate', async (req, res) => {
-  try {
-    const width = parseInt(String(req.query.width || '200'));
-    const height = parseInt(String(req.query.height || '200'));
-    const content = String(req.query.content || '').split('\n').filter(line => line.trim());
-    console.log('uncompressed content:',content);
-    // Validate parameters
-    if (!width || !height || !content.length) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-
-    // Generate the collage
-    const imageBuffer = await generateCollage(
-      { width, height },
-      content
-    );
-
-    // Set response headers
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', 'inline; filename=collage.png');
-
-    // Send the image
-    res.send(imageBuffer);
-  } catch (error) {
-    console.error('Error generating collage:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Add basic route for testing
-app.get('/', (req, res) => {
-    console.log('Received request');
-    res.setHeader('Content-Type', 'text/plain');
-    res.setHeader('Connection', 'close');
-    res.send('Hello from HTTPS server!');
-});
-
-// Start servers
-const HTTP_PORT = process.env.PORT || 8080;
-const HTTPS_PORT = process.env.HTTPS_PORT || 8443;
-
-httpServer.listen(HTTP_PORT, () => {
-    console.log(`HTTP Server running on port ${HTTP_PORT}`);
-});
-
-if (httpsServer) {
-    httpsServer.listen({
-        port: HTTPS_PORT,
-        host: '0.0.0.0'
-    }, () => {
-        console.log(`HTTPS Server running on port ${HTTPS_PORT}`);
-    });
-}
+console.log(`Server running on ${tls ? 'HTTPS' : 'HTTP'} at port ${server.port}`);

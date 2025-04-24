@@ -9,11 +9,23 @@ const https = require('https');
 const app = express();
 
 // Check for SSL certificate files
-const domain = 'picolov.com'; // Replace with your domain
+const domain = 'picolov.com';
 const certPath = `/etc/letsencrypt/live/${domain}`;
 let httpsServer = null;
 
 try {
+    // Verify certificate files exist and are readable
+    const certFiles = ['privkey.pem', 'cert.pem', 'chain.pem'];
+    for (const file of certFiles) {
+        const filePath = `${certPath}/${file}`;
+        if (!fs.existsSync(filePath)) {
+            throw new Error(`Certificate file not found: ${filePath}`);
+        }
+        if (!fs.readFileSync(filePath, 'utf8')) {
+            throw new Error(`Certificate file is empty: ${filePath}`);
+        }
+    }
+
     const privateKey = fs.readFileSync(`${certPath}/privkey.pem`, 'utf8');
     const certificate = fs.readFileSync(`${certPath}/cert.pem`, 'utf8');
     const ca = fs.readFileSync(`${certPath}/chain.pem`, 'utf8');
@@ -21,14 +33,37 @@ try {
     const credentials = {
         key: privateKey,
         cert: certificate,
-        ca: ca
+        ca: ca,
+        // Add additional SSL options
+        ciphers: 'HIGH:!aNULL:!MD5',
+        honorCipherOrder: true,
+        requestCert: false,
+        rejectUnauthorized: false,
+        // Add more secure options
+        secureOptions: require('constants').SSL_OP_NO_SSLv3 | require('constants').SSL_OP_NO_TLSv1,
+        // Add error handling
+        sessionTimeout: 300,
+        ticketKeys: Buffer.from('01234567890123456789012345678901', 'hex')
     };
 
     // Create HTTPS server if certificates exist
     httpsServer = https.createServer(credentials, app);
-    console.log('SSL certificates found, HTTPS server will be started');
+    
+    // Add error handling for the HTTPS server
+    httpsServer.on('error', (err) => {
+        console.error('HTTPS Server Error:', err);
+    });
+    
+    httpsServer.on('clientError', (err, socket) => {
+        console.error('HTTPS Client Error:', err);
+        if (!socket.writable) return;
+        socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+    });
+    
+    console.log('SSL certificates found and validated, HTTPS server will be started');
 } catch (error) {
-    console.log('SSL certificates not found, only HTTP server will be started');
+    console.error('SSL configuration error:', error.message);
+    console.log('Only HTTP server will be started');
 }
 
 // Create HTTP server

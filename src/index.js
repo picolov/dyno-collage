@@ -1,21 +1,25 @@
-import { createCanvas } from '@napi-rs/canvas';
-import { generateCollage as dynoGenerateCollage } from './dyno-collage.js';
+import { Resvg } from '@resvg/resvg-js';
 
 /**
  * Generates a collage image with positioned text and images
  * @param {Object} size - Size of the output image
  * @param {number} size.width - Width of the image
  * @param {number} size.height - Height of the image
- * @param {Array<string>} content - Array of instructions with values and styling
+ * @param {string} svgData - SVG data
  * @returns {Promise<Buffer>} - PNG image buffer
  */
-export async function generateCollage(size, content) {
-  // Create a canvas
-  const canvas = createCanvas(size.width, size.height);
-  
-  // Generate the collage
-  await dynoGenerateCollage(canvas, size, content);
-  
-  // Convert to buffer
-  return canvas.toBuffer('image/png');
+export async function generateCollage(size, svgData) {
+    // Create Resvg instance with the SVG data
+    const resvg = new Resvg(svgData, {
+        fitTo: {
+            mode: 'original'
+        },
+        background: 'white',
+    });
+
+    // Render the SVG to PNG
+    const pngData = resvg.render();
+    
+    // Convert to buffer
+    return pngData.asPng();
 }

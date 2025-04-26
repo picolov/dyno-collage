@@ -9,8 +9,7 @@ declare global {
     dynoCollage: {
       generateCollage: (
         canvas: CommonCanvas,
-        size: { width: number; height: number },
-        content: string[]
+        svgData: string
       ) => Promise<CommonCanvas>;
     };
   }
@@ -18,6 +17,5 @@ declare global {
 
 export function generateCollage(
   canvas: CommonCanvas,
-  size: { width: number; height: number },
-  content: string[]
+  svgData: string
 ): Promise<CommonCanvas>; 

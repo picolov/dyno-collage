@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pi-Collage Generator</title>
+    <title>Comb-Pose</title>
     <link rel="icon" type="image/png" href="/pi-co.png">
     <style>
         body {
@@ -12,28 +13,36 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .title-container {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 20px;
         }
+
         .title-container img {
             width: 50px;
             height: auto;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             display: block;
             margin-bottom: 5px;
         }
-        input, textarea, select {
+
+        input,
+        textarea,
+        select {
             width: 100%;
             padding: 8px;
             margin-bottom: 5px;
         }
+
         button {
             padding: 10px 20px;
             background-color: #007bff;
@@ -42,63 +51,93 @@
             cursor: pointer;
             border-radius: 4px;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         #result {
             margin-top: 20px;
             text-align: center;
             padding: 10px;
             background: white;
         }
+
         #result canvas {
             max-width: 100%;
             display: block;
             margin: 0 auto;
             border: 1px solid #ddd;
         }
+
+        .qr-section {
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .qr-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            color: #666;
+        }
+
         .help-text {
             font-size: 0.9em;
             color: #666;
             margin-top: 5px;
         }
+
         .size-inputs {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .size-inputs input {
             width: 80px;
             text-align: center;
         }
+
         .size-inputs span {
             font-size: 1.2em;
             color: #666;
         }
+
         .controls {
             display: flex;
             gap: 10px;
             justify-content: center;
             margin-top: 10px;
         }
-        .save-btn {
-            background-color: #28a745;
-        }
-        .save-btn:hover {
-            background-color: #218838;
-        }
+
         .copy-btn {
             background-color: #6c757d;
         }
+
         .copy-btn:hover {
             background-color: #5a6268;
         }
+
         .api-url-container {
             margin-top: 20px;
             padding: 10px;
             background: #f8f9fa;
             border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
         }
+
+        .api-url-content {
+            flex: 1;
+        }
+
         .api-url-input {
             font-family: monospace;
             font-size: 0.9em;
@@ -106,304 +145,1200 @@
             border: 1px solid #ddd;
             padding: 8px;
             margin-bottom: 5px;
+            width: 100%;
+            box-sizing: border-box;
         }
+
         .copy-message {
             color: #28a745;
             font-size: 0.9em;
             margin-top: 5px;
             display: none;
         }
+
         .url-format-options {
             display: flex;
             gap: 15px;
             margin-bottom: 10px;
         }
+
         .url-format-option {
             display: flex;
             align-items: center;
             gap: 5px;
         }
+
         .url-format-option input[type="radio"] {
             margin: 0;
             width: auto;
         }
+
         .url-format-option label {
             margin: 0;
             font-size: 0.9em;
             color: #666;
         }
+
         .content-group {
             border: 1px solid #ddd;
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 4px;
             background: #f8f9fa;
+            width: 100%;
+            box-sizing: border-box;
         }
+
+        .content-input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .content-type-select {
+            width: 120px;
+            padding: 8px;
+            border: 1px solid #767676;
+            border-radius: 4px;
+        }
+
+        .content-value-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #767676;
+            border-radius: 4px;
+        }
+
         .content-group-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
+
         .content-group-header h3 {
             margin: 0;
             font-size: 1em;
             color: #666;
         }
+
         .content-group-header button {
             padding: 5px 10px;
             font-size: 0.8em;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
+
+        .content-group-header button:hover {
+            background-color: #c82333;
+        }
+
         .transformations {
             margin-top: 10px;
         }
+
         .transformation-row {
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
             align-items: center;
         }
+
         .transformation-row select {
             width: 120px;
         }
+
+        .transformation-row .input-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
         .transformation-row input {
             flex: 1;
+            padding-right: 120px;
+            /* Make space for the value info */
         }
+
+        .transformation-row .value-info {
+            position: absolute;
+            right: 8px;
+            color: #666;
+            font-size: 0.8em;
+            white-space: nowrap;
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            pointer-events: none;
+        }
+
         .transformation-row button {
             padding: 5px 10px;
             background-color: #dc3545;
         }
+
         .transformation-row button:hover {
             background-color: #c82333;
         }
+
         .add-transformation-btn {
             width: 100%;
             margin-top: 5px;
-            background-color: #6c757d;
+            background-color: #28a745;
         }
+
         .add-transformation-btn:hover {
-            background-color: #5a6268;
+            background-color: #218838;
         }
+
         .add-content-group-btn {
             width: 100%;
             margin-top: 10px;
             background-color: #28a745;
         }
+
         .add-content-group-btn:hover {
             background-color: #218838;
         }
+
+        .collections-link {
+            margin-left: auto;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .collections-link:hover {
+            background-color: #0056b3;
+        }
+
+        .save-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .save-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .save-modal h2 {
+            margin-top: 0;
+        }
+
+        .save-modal input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+
+        .save-modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .save-modal-buttons button {
+            padding: 8px 15px;
+        }
+
+        .save-modal-buttons .cancel-btn {
+            background-color: #6c757d;
+        }
+
+        .save-modal-buttons .save-btn {
+            background-color: #28a745;
+        }
+
+        .content-length-warning {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .content-length-info {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .qr-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .qr-modal h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        #qrCode {
+            width: 400px;
+            height: 400px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 0 auto;
+        }
+
+        .qr-modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .qr-modal-buttons button {
+            padding: 8px 15px;
+        }
+
+        .qr-modal-buttons .close-btn {
+            background-color: #6c757d;
+        }
+
+        .svg-editor {
+            margin-top: 20px;
+        }
+
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .preview-container {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .preview-container h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            color: #666;
+        }
+
+        #svg-preview {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #preview-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        #svg-code {
+            width: 100%;
+            height: 100px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            resize: vertical;
+            background: #f8f9fa;
+        }
+
+        .editor-tools {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .tool-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tool-section h3 {
+            margin: 0 0 10px 0;
+            font-size: 1em;
+            color: #666;
+        }
+
+        .tool-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tool-buttons button {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 5px;
+            font-size: 0.9em;
+        }
+
+        .properties-form {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        #no-selection-message {
+            color: #999;
+            font-style: italic;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .editor-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .editor-actions button {
+            padding: 8px 15px;
+            background-color: #007bff;
+        }
+
+        .editor-actions button:hover {
+            background-color: #0056b3;
+        }
+
+        .elements-list {
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .element-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .element-item:last-child {
+            border-bottom: none;
+        }
+
+        .element-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .element-item.selected {
+            background-color: #e3f2fd;
+            border-left: 3px solid #007bff;
+        }
+
+        .element-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            color: white;
+            background-color: #6c757d;
+            margin-right: 8px;
+        }
+        
+        .element-type.text {
+            background-color: #28a745;
+        }
+        
+        .element-type.image {
+            background-color: #fd7e14;
+        }
+        
+        .element-type.rect {
+            background-color: #dc3545;
+        }
+        
+        .element-type.circle {
+            background-color: #007bff;
+        }
+        
+        .element-type.path {
+            background-color: #6610f2;
+        }
+
+        .element-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
+
 <body>
     <div class="title-container">
         <img src="/pi-co.png" alt="Dyno Logo">
         <h1><span style="color: #ada08a;">pi-</span>Collage Generator</h1>
+        <a href="/collections" class="collections-link">View Server Collections</a>
     </div>
 
     <div class="api-url-container">
-        <label for="apiUrl">IMAGE URL : <span id="baseUrl" style="font-family: monospace;"></span></label>
-        <input type="text" id="compressedParam" class="api-url-input" style="flex: 1;">
-        <div class="controls">
-            <button class="copy-btn" onclick="pasteFromClipboard()">Paste URL from Clipboard</button>
-            <button class="copy-btn" onclick="copyApiUrl()">Copy URL to Clipboard</button>
+        <div class="api-url-content">
+            <label for="apiUrl">IMAGE URL : <span id="baseUrl" style="font-family: monospace;"></span></label>
+            <input type="text" id="apiUrl" class="api-url-input">
+            <div class="controls">
+                <button class="copy-btn" onclick="pasteFromClipboard()">Paste URL from Clipboard and Fill Form</button>
+                <button class="copy-btn" onclick="copyApiUrl()">Copy URL to Clipboard</button>
+                <button class="copy-btn" onclick="showQRModal()">Share QR Code</button>
+            </div>
+            <div id="copyMessage" class="copy-message">URL copied to clipboard!</div>
         </div>
-        <div id="copyMessage" class="copy-message">URL copied to clipboard!</div>
     </div>
 
-    <div id="result">
-        <canvas id="collageCanvas"></canvas>
-        <div class="controls">
-            <button class="save-btn" onclick="saveCanvas()">Save Image</button>
+    <div id="qrModal" class="qr-modal">
+        <div class="qr-modal-content">
+            <h3>Share URL QR Code</h3>
+            <div id="qrCode"></div>
+            <div class="qr-modal-buttons">
+                <button class="close-btn" onclick="hideQRModal()">Close</button>
+            </div>
         </div>
     </div>
-    
-    <form id="collageForm" onsubmit="return false;">
+
+    <div id="svg-editor" class="svg-editor">
         <div class="form-group">
-            <label>Size:</label>
+            <label>Canvas Size:</label>
             <div class="size-inputs">
-                <input type="number" id="width" value="300">
-                <span>×</span>
-                <input type="number" id="height" value="300">
+                <input type="number" id="width" value="400" min="50" max="2000"> 
+                <span>×</span> 
+                <input type="number" id="height" value="400" min="50" max="2000">
             </div>
         </div>
         
-        <div class="form-group">
-            <label>Content Instructions:</label>
-            <div id="contentGroups">
-                <!-- Content groups will be added here -->
+        <div class="editor-container">
+            <div class="preview-container">
+                <h3>Preview</h3>
+                <div id="svg-preview">
+                    <canvas id="preview-canvas"></canvas>
+                </div>
+                <textarea id="svg-code" readonly style="display: none;"></textarea>
             </div>
-            <button type="button" class="add-content-group-btn" onclick="addContentGroup()">Add Content Group</button>
-            <div class="help-text">
-                For text: text://Your text<br>
-                For images: https://example.com/image.png<br>
-                Available styles: position, scale, rotate, font-size
+            
+            <div class="editor-tools">
+                <div class="tool-section">
+                    <h3>Add Element</h3>
+                    <div class="tool-buttons">
+                        <button onclick="addText()">Add Text</button>
+                        <button onclick="addImage()">Add Image</button>
+                        <button onclick="addRect()">Add Rectangle</button>
+                        <button onclick="addCircle()">Add Circle</button>
+                        <button onclick="addPath()">Add Path</button>
+                    </div>
+                </div>
+                
+                <div class="tool-section">
+                    <h3>Elements</h3>
+                    <div id="elements-list" class="elements-list">
+                        <div id="no-elements-message" style="padding: 10px; color: #999; font-style: italic;">No elements added yet</div>
+                    </div>
+                </div>
+                
+                <div id="element-properties" class="tool-section">
+                    <h3>Properties</h3>
+                    <div id="no-selection-message">Select an element to edit its properties</div>
+                    <!-- Properties will be dynamically added here -->
+                </div>
+                
+                <div id="contentGroups">
+                    <!-- Content items will be added here -->
+                </div>
+                
+                <div id="contentLengthWarning" class="content-length-warning">Content exceeds maximum length (2000 characters)</div>
+                <div id="contentLengthInfo" class="content-length-info">Content length: <span id="contentLength">0</span>/2000</div>
+                
+                <div class="editor-actions">
+                    <button onclick="showSaveModal()">Save Image to Server</button>
+                    <button onclick="downloadImage()">Download Image</button>
+                </div>
             </div>
         </div>
-    </form>
+    </div>
 
-    <script src="/dyno-collage.js"></script>
+    <div id="saveModal" class="save-modal">
+        <div class="save-modal-content">
+            <h2>Save Collage</h2>
+            <input type="text" id="collageName" placeholder="Enter collage name">
+            <div class="save-modal-buttons">
+                <button class="cancel-btn" onclick="hideSaveModal()">Cancel</button>
+                <button class="save-btn" onclick="saveCollage()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@resvg/resvg-wasm"></script>
     <script src="/lz-string.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script>
-        const canvas = document.getElementById('collageCanvas');
+        let qrCode = null;
+        let svgElements = [];
+        let selectedElement = null;
+        
         const baseUrlLabel = document.getElementById('baseUrl');
-        const compressedParamInput = document.getElementById('compressedParam');
+        const apiUrlInput = document.getElementById('apiUrl');
         const copyMessage = document.getElementById('copyMessage');
         const defaultErrorImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZTZlNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSJyZWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkdlbmVyYXRpb24gRmFpbGVkPC90ZXh0Pjwvc3ZnPg==';
 
         // Set the base URL on page load
         baseUrlLabel.textContent = `${window.location.origin}/generate/`;
 
-        function addTransformationRow(container, style = '', value = '') {
-            const row = document.createElement('div');
-            row.className = 'transformation-row';
+        // Initialize SVG editor
+        document.addEventListener('DOMContentLoaded', function() {
+            initSvgEditor();
+            loadCollageFromId();
+        });
+
+        function initSvgEditor() {
+            // Create initial SVG
+            updateSvgPreview();
             
-            const select = document.createElement('select');
-            ['position', 'scale', 'rotate', 'font-size'].forEach(optionStyle => {
-                const option = document.createElement('option');
-                option.value = optionStyle;
-                option.textContent = optionStyle;
-                if (optionStyle === style) {
-                    option.selected = true;
+            // Add event listeners to size inputs
+            document.getElementById('width').addEventListener('input', updateSvgPreview);
+            document.getElementById('height').addEventListener('input', updateSvgPreview);
+            
+            // Initialize elements list
+            updateElementsList();
+        }
+
+        function updateElementsList() {
+            const listContainer = document.getElementById('elements-list');
+            const noElementsMessage = document.getElementById('no-elements-message');
+            
+            // Clear the current list
+            while (listContainer.firstChild) {
+                listContainer.removeChild(listContainer.firstChild);
+            }
+            
+            // Show message if no elements
+            if (svgElements.length === 0) {
+                listContainer.appendChild(noElementsMessage);
+                return;
+            }
+            
+            // Add each element to the list
+            svgElements.forEach(element => {
+                const elementItem = document.createElement('div');
+                elementItem.className = 'element-item';
+                elementItem.setAttribute('data-id', element.id);
+                if (selectedElement && selectedElement.id === element.id) {
+                    elementItem.classList.add('selected');
                 }
-                select.appendChild(option);
+                
+                // Add element type badge
+                const typeBadge = document.createElement('span');
+                typeBadge.className = `element-type ${element.type}`;
+                typeBadge.textContent = element.type.charAt(0).toUpperCase() + element.type.slice(1);
+                
+                // Add element name/description
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'element-name';
+                let description = '';
+                switch(element.type) {
+                    case 'text':
+                        description = element.text.substring(0, 20) + (element.text.length > 20 ? '...' : '');
+                        break;
+                    case 'image':
+                        const urlParts = element.href.split('/');
+                        description = urlParts[urlParts.length - 1];
+                        break;
+                    case 'rect':
+                        description = `${element.width}×${element.height}`;
+                        break;
+                    case 'circle':
+                        description = `r=${element.r}`;
+                        break;
+                    case 'path':
+                        description = 'Path';
+                        break;
+                }
+                nameSpan.textContent = description;
+                
+                // Assemble the element item
+                elementItem.appendChild(typeBadge);
+                elementItem.appendChild(nameSpan);
+                
+                // Add click event
+                elementItem.addEventListener('click', () => {
+                    const foundElement = svgElements.find(el => el.id === element.id);
+                    if (foundElement) {
+                        selectElement(foundElement);
+                        
+                        // Update selected state in list
+                        document.querySelectorAll('.element-item').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        elementItem.classList.add('selected');
+                    }
+                });
+                
+                listContainer.appendChild(elementItem);
+            });
+        }
+
+        function addText() {
+            const element = {
+                type: 'text',
+                id: 'text_' + Date.now(),
+                x: 100,
+                y: 100,
+                text: 'Sample Text',
+                fontSize: 24,
+                fontFamily: 'Arial',
+                fill: '#000000',
+                textAnchor: 'middle'
+            };
+            
+            svgElements.push(element);
+            updateSvgPreview();
+            selectElement(element);
+            updateElementsList();
+        }
+
+        function addImage() {
+            const element = {
+                type: 'image',
+                id: 'image_' + Date.now(),
+                x: 50,
+                y: 50,
+                width: 100,
+                height: 100,
+                href: prompt('Enter image URL:') || 'https://via.placeholder.com/100'
+            };
+            
+            svgElements.push(element);
+            updateSvgPreview();
+            selectElement(element);
+            updateElementsList();
+        }
+
+        function addRect() {
+            const element = {
+                type: 'rect',
+                id: 'rect_' + Date.now(),
+                x: 50,
+                y: 50,
+                width: 100,
+                height: 80,
+                fill: '#a23',
+                stroke: '#000',
+                strokeWidth: 2,
+                rx: 5,
+                ry: 5
+            };
+            
+            svgElements.push(element);
+            updateSvgPreview();
+            selectElement(element);
+            updateElementsList();
+        }
+
+        function addCircle() {
+            const element = {
+                type: 'circle',
+                id: 'circle_' + Date.now(),
+                cx: 100,
+                cy: 100,
+                r: 50,
+                fill: '#2a3',
+                stroke: '#000',
+                strokeWidth: 2
+            };
+            
+            svgElements.push(element);
+            updateSvgPreview();
+            selectElement(element);
+            updateElementsList();
+        }
+
+        function addPath() {
+            const element = {
+                type: 'path',
+                id: 'path_' + Date.now(),
+                d: 'M50,50 L150,50 L100,150 Z',
+                fill: '#23a',
+                stroke: '#000',
+                strokeWidth: 2
+            };
+            
+            svgElements.push(element);
+            updateSvgPreview();
+            selectElement(element);
+            updateElementsList();
+        }
+
+        function selectElement(element) {
+            selectedElement = element;
+            
+            // Update properties panel
+            const propertiesPanel = document.getElementById('element-properties');
+            propertiesPanel.innerHTML = '<h3>Properties</h3>';
+            
+            const form = document.createElement('div');
+            form.className = 'properties-form';
+            
+            // Add common properties
+            // form.innerHTML += `
+            //     <div class="form-group">
+            //         <label>ID</label>
+            //         <input type="text" id="prop-id" value="${element.id}" readonly>
+            //     </div>
+            // `;
+            
+            // Add properties based on element type
+            switch(element.type) {
+                case 'text':
+                    form.innerHTML += `
+                        <div class="form-group">
+                            <label>Text</label>
+                            <input type="text" id="prop-text" value="${element.text}">
+                        </div>
+                        <div class="form-group">
+                            <label>X Position</label>
+                            <input type="number" id="prop-x" value="${element.x}">
+                        </div>
+                        <div class="form-group">
+                            <label>Y Position</label>
+                            <input type="number" id="prop-y" value="${element.y}">
+                        </div>
+                        <div class="form-group">
+                            <label>Font Size</label>
+                            <input type="number" id="prop-fontSize" value="${element.fontSize}">
+                        </div>
+                        <div class="form-group">
+                            <label>Font Family</label>
+                            <select id="prop-fontFamily">
+                                <option value="Arial" ${element.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
+                                <option value="Verdana" ${element.fontFamily === 'Verdana' ? 'selected' : ''}>Verdana</option>
+                                <option value="Times New Roman" ${element.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
+                                <option value="Courier New" ${element.fontFamily === 'Courier New' ? 'selected' : ''}>Courier New</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fill Color</label>
+                            <input type="color" id="prop-fill" value="${element.fill}">
+                        </div>
+                        <div class="form-group">
+                            <label>Text Anchor</label>
+                            <select id="prop-textAnchor">
+                                <option value="start" ${element.textAnchor === 'start' ? 'selected' : ''}>Start</option>
+                                <option value="middle" ${element.textAnchor === 'middle' ? 'selected' : ''}>Middle</option>
+                                <option value="end" ${element.textAnchor === 'end' ? 'selected' : ''}>End</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                case 'image':
+                    form.innerHTML += `
+                        <div class="form-group">
+                            <label>X Position</label>
+                            <input type="number" id="prop-x" value="${element.x}">
+                        </div>
+                        <div class="form-group">
+                            <label>Y Position</label>
+                            <input type="number" id="prop-y" value="${element.y}">
+                        </div>
+                        <div class="form-group">
+                            <label>Width</label>
+                            <input type="number" id="prop-width" value="${element.width}">
+                        </div>
+                        <div class="form-group">
+                            <label>Height</label>
+                            <input type="number" id="prop-height" value="${element.height}">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL</label>
+                            <input type="text" id="prop-href" value="${element.href}">
+                        </div>
+                    `;
+                    break;
+                case 'rect':
+                    form.innerHTML += `
+                        <div class="form-group">
+                            <label>X Position</label>
+                            <input type="number" id="prop-x" value="${element.x}">
+                        </div>
+                        <div class="form-group">
+                            <label>Y Position</label>
+                            <input type="number" id="prop-y" value="${element.y}">
+                        </div>
+                        <div class="form-group">
+                            <label>Width</label>
+                            <input type="number" id="prop-width" value="${element.width}">
+                        </div>
+                        <div class="form-group">
+                            <label>Height</label>
+                            <input type="number" id="prop-height" value="${element.height}">
+                        </div>
+                        <div class="form-group">
+                            <label>Corner Radius X</label>
+                            <input type="number" id="prop-rx" value="${element.rx}">
+                        </div>
+                        <div class="form-group">
+                            <label>Corner Radius Y</label>
+                            <input type="number" id="prop-ry" value="${element.ry}">
+                        </div>
+                        <div class="form-group">
+                            <label>Fill Color</label>
+                            <input type="color" id="prop-fill" value="${element.fill}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stroke Color</label>
+                            <input type="color" id="prop-stroke" value="${element.stroke}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stroke Width</label>
+                            <input type="number" id="prop-strokeWidth" value="${element.strokeWidth}">
+                        </div>
+                    `;
+                    break;
+                case 'circle':
+                    form.innerHTML += `
+                        <div class="form-group">
+                            <label>Center X</label>
+                            <input type="number" id="prop-cx" value="${element.cx}">
+                        </div>
+                        <div class="form-group">
+                            <label>Center Y</label>
+                            <input type="number" id="prop-cy" value="${element.cy}">
+                        </div>
+                        <div class="form-group">
+                            <label>Radius</label>
+                            <input type="number" id="prop-r" value="${element.r}">
+                        </div>
+                        <div class="form-group">
+                            <label>Fill Color</label>
+                            <input type="color" id="prop-fill" value="${element.fill}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stroke Color</label>
+                            <input type="color" id="prop-stroke" value="${element.stroke}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stroke Width</label>
+                            <input type="number" id="prop-strokeWidth" value="${element.strokeWidth}">
+                        </div>
+                    `;
+                    break;
+                case 'path':
+                    form.innerHTML += `
+                        <div class="form-group">
+                            <label>Path Data</label>
+                            <input type="text" id="prop-d" value="${element.d}">
+                        </div>
+                        <div class="form-group">
+                            <label>Fill Color</label>
+                            <input type="color" id="prop-fill" value="${element.fill}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stroke Color</label>
+                            <input type="color" id="prop-stroke" value="${element.stroke}">
+                        </div>
+                        <div class="form-group">
+                            <label>Stroke Width</label>
+                            <input type="number" id="prop-strokeWidth" value="${element.strokeWidth}">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            // Add delete button
+            form.innerHTML += `
+                <div class="form-group">
+                    <button onclick="deleteSelectedElement()">Delete Element</button>
+                </div>
+            `;
+            
+            propertiesPanel.appendChild(form);
+            
+            // Add event listeners to property inputs
+            const inputs = form.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', updateElementProperty);
             });
             
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = 'Value';
-            input.value = value;
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.onclick = () => {
-                row.remove();
-                generateCollage();
-                updateApiUrl();
-            };
-            
-            row.appendChild(select);
-            row.appendChild(input);
-            row.appendChild(deleteBtn);
-            container.appendChild(row);
+            // Update selected state in elements list
+            document.querySelectorAll('.element-item').forEach(item => {
+                item.classList.remove('selected');
+                
+                // Find and select the matching element
+                const elementId = item.getAttribute('data-id');
+                if (elementId === element.id) {
+                    item.classList.add('selected');
+                }
+            });
         }
 
-        function addContentGroup(content = '', transformations = []) {
-            const group = document.createElement('div');
-            group.className = 'content-group';
+        function updateElementProperty(event) {
+            if (!selectedElement) return;
             
-            const header = document.createElement('div');
-            header.className = 'content-group-header';
+            const propName = event.target.id.replace('prop-', '');
+            let value = event.target.value;
             
-            const title = document.createElement('h3');
-            title.textContent = 'Content Group';
+            // Convert numeric values
+            if (['x', 'y', 'cx', 'cy', 'width', 'height', 'fontSize', 'r', 'rx', 'ry', 'strokeWidth'].includes(propName)) {
+                value = parseFloat(value);
+            }
             
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.textContent = 'Delete Group';
-            deleteBtn.onclick = () => {
-                group.remove();
-                generateCollage();
-                updateApiUrl();
-            };
+            selectedElement[propName] = value;
+            updateSvgPreview();
+            updateElementsList();
+        }
+
+        function deleteSelectedElement() {
+            if (!selectedElement) return;
             
-            header.appendChild(title);
-            header.appendChild(deleteBtn);
-            
-            const contentInput = document.createElement('input');
-            contentInput.type = 'text';
-            contentInput.placeholder = 'text://Your text or image URL';
-            contentInput.className = 'content-input';
-            contentInput.value = content;
-            
-            const transformationsContainer = document.createElement('div');
-            transformationsContainer.className = 'transformations';
-            
-            const addTransformationBtn = document.createElement('button');
-            addTransformationBtn.type = 'button';
-            addTransformationBtn.className = 'add-transformation-btn';
-            addTransformationBtn.textContent = 'Add Transformation';
-            addTransformationBtn.onclick = () => addTransformationRow(transformationsContainer);
-            
-            group.appendChild(header);
-            group.appendChild(contentInput);
-            group.appendChild(transformationsContainer);
-            group.appendChild(addTransformationBtn);
-            
-            document.getElementById('contentGroups').appendChild(group);
-            
-            // Add transformations if provided
-            if (transformations.length > 0) {
-                transformations.forEach(({ style, value }) => {
-                    addTransformationRow(transformationsContainer, style, value);
-                });
-            } else {
-                addTransformationRow(transformationsContainer);
+            const index = svgElements.findIndex(el => el.id === selectedElement.id);
+            if (index !== -1) {
+                svgElements.splice(index, 1);
+                selectedElement = null;
+                
+                // Clear properties panel
+                const propertiesPanel = document.getElementById('element-properties');
+                propertiesPanel.innerHTML = '<h3>Properties</h3><div id="no-selection-message">Select an element to edit its properties</div>';
+                
+                updateSvgPreview();
+                updateElementsList();
             }
         }
 
-        function getContentString() {
-            const groups = document.querySelectorAll('.content-group');
-            return Array.from(groups).map(group => {
-                const content = group.querySelector('.content-input').value;
-                const transformations = Array.from(group.querySelectorAll('.transformation-row'))
-                    .map(row => {
-                        const style = row.querySelector('select').value;
-                        const value = row.querySelector('input').value;
-                        return `${style} ${value}`;
-                    })
-                    .join(';');
-                return `${content}${transformations ? ';' + transformations : ''}`;
-            }).join('\n');
-        }
-
-        function updateApiUrl() {
-            const width = document.getElementById('width').value;
-            const height = document.getElementById('height').value;
-            const content = getContentString();
+        function updateSvgPreview() {
+            const width = document.getElementById('width').value || 400;
+            const height = document.getElementById('height').value || 400;
             
-            const compressedParams = LZString.compressToEncodedURIComponent(JSON.stringify([width, height, content]));
-            compressedParamInput.value = compressedParams;
-        }
-
-        async function generateCollage() {
-            const width = document.getElementById('width').value;
-            const height = document.getElementById('height').value;
-            const content = getContentString();
+            // Generate SVG code
+            let svgCode = `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
             
+            // Add elements
+            svgElements.forEach(element => {
+                switch(element.type) {
+                    case 'text':
+                        svgCode += `
+                            <text 
+                                x="${element.x}" 
+                                y="${element.y}" 
+                                font-size="${element.fontSize}" 
+                                font-family="${element.fontFamily}" 
+                                fill="${element.fill}" 
+                                text-anchor="${element.textAnchor}"
+                            >${element.text}</text>
+                        `;
+                        break;
+                    case 'image':
+                        svgCode += `
+                            <image 
+                                x="${element.x}" 
+                                y="${element.y}" 
+                                width="${element.width}" 
+                                height="${element.height}" 
+                                href="${element.href}"
+                            />
+                        `;
+                        break;
+                    case 'rect':
+                        svgCode += `
+                            <rect 
+                                x="${element.x}" 
+                                y="${element.y}" 
+                                width="${element.width}" 
+                                height="${element.height}" 
+                                rx="${element.rx}" 
+                                ry="${element.ry}" 
+                                fill="${element.fill}" 
+                                stroke="${element.stroke}" 
+                                stroke-width="${element.strokeWidth}"
+                            />
+                        `;
+                        break;
+                    case 'circle':
+                        svgCode += `
+                            <circle 
+                                cx="${element.cx}" 
+                                cy="${element.cy}" 
+                                r="${element.r}" 
+                                fill="${element.fill}" 
+                                stroke="${element.stroke}" 
+                                stroke-width="${element.strokeWidth}"
+                            />
+                        `;
+                        break;
+                    case 'path':
+                        svgCode += `
+                            <path 
+                                d="${element.d}" 
+                                fill="${element.fill}" 
+                                stroke="${element.stroke}" 
+                                stroke-width="${element.strokeWidth}"
+                            />
+                        `;
+                        break;
+                }
+            });
+            
+            svgCode += '</svg>';
+            
+            // Update code textarea
+            const codeTextarea = document.getElementById('svg-code');
+            codeTextarea.value = svgCode;
+            
+            // Render SVG to canvas
+            renderSvgToCanvas(svgCode, width, height);
+            
+            // Update API URL
+            updateApiUrl(svgCode);
+            
+            // Update content length display
+            updateContentLength();
+        }
+        
+        function renderSvgToCanvas(svgCode, width, height) {
             try {
-                await window.dynoCollage.generateCollage(
-                    canvas,
-                    { width: parseInt(width), height: parseInt(height) },
-                    content.split('\n').filter(line => line.trim())
-                );
-                updateApiUrl();
+                // Sanitize SVG for rendering
+                // Ensure it has the proper namespace
+                if (!svgCode.includes('xmlns=')) {
+                    svgCode = svgCode.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+                }
+                
+                // Create SVG blob
+                const svgBlob = new Blob([svgCode], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                // Get canvas and set dimensions
+                const canvas = document.getElementById('preview-canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                
+                // Clear canvas with white background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Load and draw SVG on canvas
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    URL.revokeObjectURL(svgUrl); // Clean up
+                };
+                
+                img.onerror = function(e) {
+                    console.error('Error loading SVG into canvas:', e);
+                    console.log('SVG code causing error:', svgCode);
+                    
+                    // Draw error message on canvas
+                    ctx.fillStyle = '#ffe6e6';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = 'red';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Error rendering SVG', width/2, height/2);
+                    URL.revokeObjectURL(svgUrl); // Clean up
+                };
+                
+                img.src = svgUrl;
             } catch (error) {
-                console.error('Generation failed:', error);
+                console.error('Error in renderSvgToCanvas:', error);
+                
+                // Draw error message on canvas
+                const canvas = document.getElementById('preview-canvas');
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = '#ffe6e6';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, width, height);
+                ctx.font = '14px Arial';
                 ctx.fillStyle = 'red';
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.font = '12px Arial';
-                ctx.fillText('Generation Failed', canvas.width/2, canvas.height/2);
+                ctx.fillText('Error processing SVG', width/2, height/2);
             }
         }
 
-        function saveCanvas() {
+        function updateContentLength() {
+            const apiUrl = apiUrlInput.value;
+            const length = apiUrl.length;
+            
+            document.getElementById('contentLength').textContent = length;
+            
+            if (length > 2000) {
+                document.getElementById('contentLengthWarning').style.display = 'block';
+            } else {
+                document.getElementById('contentLengthWarning').style.display = 'none';
+            }
+        }
+
+        function downloadImage() {
+            const canvas = document.getElementById('preview-canvas');
+            const image = canvas.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = 'collage.png';
-            link.href = canvas.toDataURL('image/png');
+            link.href = image;
+            link.download = 'image.png';
             link.click();
+        }
+
+        function updateApiUrl(svgString) {
+            const compressedContent = LZString.compressToEncodedURIComponent(svgString);
+            
+            // Update API URL input
+            apiUrlInput.value = compressedContent
         }
 
         async function copyApiUrl() {
             try {
-                let fullUrl = compressedParamInput.value;
-                if (!fullUrl.startsWith('http')) {
-                    fullUrl = baseUrlLabel.textContent + fullUrl;
-                }
+                let fullUrl = baseUrlLabel.textContent + apiUrlInput.value;
                 await navigator.clipboard.writeText(fullUrl);
                 copyMessage.style.display = 'block';
                 setTimeout(() => {
@@ -417,46 +1352,75 @@
         async function pasteFromClipboard() {
             try {
                 const clipboardText = await navigator.clipboard.readText();
-                let compressedParam = clipboardText;
-                
-                // If the text starts with http, extract the compressed parameter part
-                if (compressedParam.startsWith('http')) {
-                    const lastSlashIndex = compressedParam.lastIndexOf('/');
-                    if (lastSlashIndex !== -1) {
-                        compressedParam = compressedParam.substring(lastSlashIndex + 1);
+                let params = clipboardText;
+
+                // If the text starts with http, extract the parameters part
+                if (params.startsWith('http')) {
+                    const queryIndex = params.indexOf('?');
+                    if (queryIndex !== -1) {
+                        params = params.substring(queryIndex + 1);
                     }
                 }
 
-                // Update the compressed parameter input
-                compressedParamInput.value = compressedParam;
+                // Update the API URL input
+                apiUrlInput.value = params;
 
                 try {
-                    // Try to decompress and update the form
-                    const decompressed = LZString.decompressFromEncodedURIComponent(compressedParam);
-                    if (decompressed) {
-                        const [width, height, content] = JSON.parse(decompressed);
-                        
+                    // Parse the parameters
+                    const urlParams = new URLSearchParams(params);
+                    const width = urlParams.get('width');
+                    const height = urlParams.get('height');
+                    const content = urlParams.get('content');
+
+                    if (width && height && content) {
                         // Update width and height
                         document.getElementById('width').value = width;
                         document.getElementById('height').value = height;
                         
-                        // Clear existing content groups
-                        const contentGroups = document.getElementById('contentGroups');
-                        contentGroups.innerHTML = '';
+                        // Update SVG code
+                        document.getElementById('svg-code').value = content;
+                        document.getElementById('svg-preview').innerHTML = content;
                         
-                        // Parse and add content groups
-                        const contentLines = content.split('\n').filter(line => line.trim());
-                        contentLines.forEach(line => {
-                            const [content, ...transformations] = line.split(';');
-                            const transformPairs = transformations.map(t => {
-                                const [style, value] = t.trim().split(' ');
-                                return { style, value };
+                        // Try to parse SVG elements (simplified version)
+                        try {
+                            const parser = new DOMParser();
+                            const svgDoc = parser.parseFromString(content, 'image/svg+xml');
+                            
+                            // Reset elements array
+                            svgElements = [];
+                            
+                            // Extract elements (simplified approach)
+                            const elementTypes = ['text', 'image', 'rect', 'circle', 'path'];
+                            elementTypes.forEach(type => {
+                                const elements = svgDoc.querySelectorAll(type);
+                                elements.forEach(el => {
+                                    // This is simplified and would need more logic to fully recreate the element objects
+                                    const newElement = { type, id: el.id || `${type}_${Date.now()}` };
+                                    
+                                    // Copy attributes based on element type
+                                    switch(type) {
+                                        case 'text':
+                                            newElement.x = parseFloat(el.getAttribute('x') || 0);
+                                            newElement.y = parseFloat(el.getAttribute('y') || 0);
+                                            newElement.text = el.textContent || 'Text';
+                                            newElement.fontSize = parseFloat(el.getAttribute('font-size') || 24);
+                                            newElement.fontFamily = el.getAttribute('font-family') || 'Arial';
+                                            newElement.fill = el.getAttribute('fill') || '#000000';
+                                            newElement.textAnchor = el.getAttribute('text-anchor') || 'start';
+                                            break;
+                                        // Add other element types as needed
+                                    }
+                                    
+                                    svgElements.push(newElement);
+                                });
                             });
-                            addContentGroup(content, transformPairs);
-                        });
+                            
+                        } catch (parseError) {
+                            console.error('Error parsing SVG elements:', parseError);
+                        }
                         
-                        // Generate the collage with the new values
-                        generateCollage();
+                        // Update preview
+                        updateSvgPreview();
                     }
                 } catch (error) {
                     console.error('Failed to parse clipboard content:', error);
@@ -466,44 +1430,155 @@
             }
         }
 
-        // Add event listeners to all form inputs
-        const formInputs = document.querySelectorAll('#width, #height');
-        formInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                clearTimeout(input.debounceTimer);
-                input.debounceTimer = setTimeout(() => {
-                    generateCollage();
-                    updateApiUrl();
-                }, 500);
-            });
-        });
+        function showSaveModal() {
+            document.getElementById('saveModal').style.display = 'block';
+        }
 
-        // Add event listener for content changes
-        document.addEventListener('input', (e) => {
-            if (e.target.matches('.content-input, .transformation-row input, .transformation-row select')) {
-                clearTimeout(e.target.debounceTimer);
-                e.target.debounceTimer = setTimeout(() => {
-                    generateCollage();
-                    updateApiUrl();
-                }, 500);
+        function hideSaveModal() {
+            document.getElementById('saveModal').style.display = 'none';
+        }
+
+        function checkContentLength() {
+            const content = getContentString();
+            const warning = document.getElementById('contentLengthWarning');
+            if (content.length > 2000) {
+                warning.style.display = 'block';
+                return false;
+            } else {
+                warning.style.display = 'none';
+                return true;
             }
-        });
+        }
 
-        // Initial setup
-        // Add first default content group (Welcome text)
-        addContentGroup('text://name is Cow-ok', [
-            { style: 'position', value: '20.3,25' },
-            { style: 'font-size', value: '24' },
-            { style: 'rotate', value: '-5' }
-        ]);
+        async function saveCollage() {
+            const name = document.getElementById('collageName').value.trim();
+            if (!name) {
+                alert('Please enter a name for your collage');
+                return;
+            }
 
-        // Add second default content group (Image)
-        addContentGroup('https://images.freeimages.com/image/previews/30b/charming-farm-animal-png-illustration-5696290.png', [
-            { style: 'position', value: '14,30' },
-            { style: 'scale', value: '0.4' }
-        ]);
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const content = getContentString();
 
-        generateCollage();
+            if (!checkContentLength()) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/collages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        width: parseInt(width),
+                        height: parseInt(height),
+                        content
+                    })
+                });
+
+                if (response.ok) {
+                    hideSaveModal();
+                    alert('Collage saved successfully!');
+                } else {
+                    const error = await response.json();
+                    alert(error.error || 'Error saving collage');
+                }
+            } catch (error) {
+                console.error('Error saving collage:', error);
+                alert('Error saving collage');
+            }
+        }
+
+        // Load collage from URL parameter
+        async function loadCollageFromId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            if (id) {
+                try {
+                    const response = await fetch(`/api/collages/${id}`);
+                    if (response.ok) {
+                        const collage = await response.json();
+                        console.log("collage ======> ", collage);
+                    }
+                } catch (error) {
+                    console.error('Error loading collage:', error);
+                }
+            }
+        }
+
+        // Load collage from URL parameter when page loads
+        document.addEventListener('DOMContentLoaded', loadCollageFromId);
+
+        function showQRModal() {
+            let compressedParams = apiUrlInput.value;
+            if (compressedParams.startsWith('<svg') || compressedParams.startsWith('%3Csvg')) {
+                compressedParams = LZString.compressToEncodedURIComponent(compressedParams);
+            }
+            console.log("params ======> ", compressedParams);
+            // First save the QR content to get an ID
+            fetch(`/qr/${compressedParams}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                console.log("data id ======> ", data.id);
+                // Generate QR code with the returned ID
+                const qrUrl = `${window.location.origin}/qr/${data.id}`;
+                
+                // Initialize QR code with styling
+                const qrCodeElement = document.getElementById('qrCode');
+                qrCodeElement.innerHTML = ''; // Clear previous QR code
+                
+                qrCode = new QRCodeStyling({
+                    width: 400,
+                    height: 400,
+                    data: qrUrl,
+                    margin: 10,
+                    dotsOptions: {
+                        color: '#6f5c4b',
+                        type: 'rounded'
+                    },
+                    cornersSquareOptions: {
+                        // type: 'none',
+                        color: '#6f5c4b'
+                    },
+                    cornersDotOptions: {
+                        // type: 'none',
+                        color: '#6f5c4b'
+                    },
+                    backgroundOptions: {
+                        color: '#ffffff'
+                    },
+                    imageOptions: {
+                        crossOrigin: 'anonymous',
+                        margin: 8,
+                        imageSize: 0.3
+                    },
+                    image: '/pi-co.png'
+                });
+                
+                qrCode.append(qrCodeElement);
+                document.getElementById('qrModal').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error generating QR code:', error);
+                alert('Failed to generate QR code. Please try again.');
+            });
+        }
+
+        function hideQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+            const qrCodeElement = document.getElementById('qrCode');
+            qrCodeElement.innerHTML = ''; // Clear QR code
+        }
     </script>
 </body>
-</html> 
+
+</html>

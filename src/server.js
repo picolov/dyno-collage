@@ -1,8 +1,36 @@
-const { generateCollage } = require('./index');
 const LZString = require('./lz-string.min');
 const path = require('path');
 const fs = require('fs');
-
+const { dbOperations } = require('./db');
+const ShortUniqueId = require('short-unique-id');
+const { Resvg } = require('@resvg/resvg-js');
+function renderSVG(svgData) {
+    const resvg = new Resvg(svgData, {
+        fitTo: {
+            mode: 'original'
+        },
+        background: 'white',
+    });
+    const pngData = resvg.render();
+    return pngData.asPng();
+}
+function getSVGDimensions(svgData) {
+    let width,height;
+    const svgWidthMatch = svgData.match(/width=["'](\d+)(px)?["']/i);
+    const svgHeightMatch = svgData.match(/height=["'](\d+)(px)?["']/i);
+    if (!svgWidthMatch || !svgHeightMatch) {
+        const viewBoxMatch = svgData.match(/viewBox=["'](\d+)\s+(\d+)\s+(\d+)\s+(\d+)["']/i);
+        if (viewBoxMatch) {
+            // viewBox format: x y width height
+            width = parseInt(viewBoxMatch[3]);
+            height = parseInt(viewBoxMatch[4]);
+        }
+    } else {
+        width = parseInt(svgWidthMatch[1]);
+        height = parseInt(svgHeightMatch[1]);
+    }
+    return { width, height };
+}
 // Check for SSL certificate files
 const domain = 'picolov.com';
 const certPath = `/etc/letsencrypt/live/${domain}`;
@@ -42,8 +70,6 @@ const server = Bun.serve({
     tls,
     async fetch(req) {
         try {
-            console.log('Received request:', req.method, req.url);
-            
             const url = new URL(req.url);
             
             // Handle static files
@@ -78,25 +104,154 @@ const server = Bun.serve({
                     headers: { 'Content-Type': 'text/html' }
                 });
             }
+
+            // Collections page
+            if (url.pathname === '/collections') {
+                const collectionsPath = path.join(process.cwd(), 'public', 'collections.html');
+                const file = Bun.file(collectionsPath);
+                if (!await file.exists()) {
+                    throw new Error('File not found: collections.html');
+                }
+                return new Response(file, {
+                    headers: { 'Content-Type': 'text/html' }
+                });
+            }
+            
+            // API endpoints
+            if (url.pathname === '/api/collages') {
+                if (req.method === 'GET') {
+                    try {
+                        const page = parseInt(url.searchParams.get('page')) || 1;
+                        const pageSize = parseInt(url.searchParams.get('pageSize')) || 12;
+                        const search = url.searchParams.get('search') || '';
+                        
+                        const result = await dbOperations.getAllCollages(page, pageSize, search);
+                        return new Response(JSON.stringify(result), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error getting collages:', error);
+                        return new Response(JSON.stringify({ error: 'Failed to get collages' }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                } else if (req.method === 'POST') {
+                    try {
+                        const body = await req.json();
+                        const { name, content } = body;
+                        const { width, height } = getSVGDimensions(content);
+                        // Check content length
+                        if (content.length > 2000) {
+                            return new Response(JSON.stringify({ 
+                                error: 'Content length exceeds maximum limit of 2000 characters. sorry, this so that my server doesn\'t explode. this will be a Member only feature in the future.' 
+                            }), {
+                                status: 400,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                        }
+
+                        // Check total records count
+                        const totalCount = await dbOperations.getTotalCount('');
+                        if (totalCount >= 10000) {
+                            return new Response(JSON.stringify({ 
+                                error: 'Our database has reached the maximum number of records (10,000). Please wait until we perform maintenance to add more capacity.' 
+                            }), {
+                                status: 400,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                        }
+
+                        const result = await dbOperations.saveCollage(name, width, height, content);
+                        return new Response(JSON.stringify({ id: result.lastInsertRowid }), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error saving collage:', error);
+                        let errorMessage = 'Failed to save collage';
+                        
+                        // Check if error is due to duplicate name
+                        if (error.message && error.message.includes('UNIQUE constraint failed')) {
+                            errorMessage = 'A collage with this name already exists. Please choose a different name.';
+                        }
+                        
+                        return new Response(JSON.stringify({ error: errorMessage }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                }
+            }
+
+            if (url.pathname === '/api/collages/count') {
+                if (req.method === 'GET') {
+                    try {
+                        const search = url.searchParams.get('search') || '';
+                        const count = await dbOperations.getTotalCount(search);
+                        return new Response(JSON.stringify({ total: count }), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error getting total count:', error);
+                        return new Response(JSON.stringify({ error: 'Failed to get total count' }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                }
+            }
+
+            if (url.pathname.startsWith('/api/collages/')) {
+                const id = parseInt(url.pathname.split('/api/collages/')[1]);
+                if (req.method === 'GET') {
+                    try {
+                        const collage = await dbOperations.getCollageById(id);
+                        if (!collage) {
+                            return new Response(JSON.stringify({ error: 'Collage not found' }), {
+                                status: 404,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                        }
+                        return new Response(JSON.stringify(collage), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error getting collage:', error);
+                        return new Response(JSON.stringify({ error: 'Failed to get collage' }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                } else if (req.method === 'DELETE') {
+                    try {
+                        await dbOperations.deleteCollage(id);
+                        return new Response(JSON.stringify({ success: true }), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error deleting collage:', error);
+                        return new Response(JSON.stringify({ error: 'Failed to delete collage' }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
+                }
+            }
             
             // Handle compressed parameters in URL path
             if (url.pathname.startsWith('/generate/')) {
                 try {
-                    const compressedParams = url.pathname.split('/generate/')[1];
-                    const params = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedParams));
-                    const width = parseInt(String(params[0] || '200'));
-                    const height = parseInt(String(params[1] || '200'));
-                    const content = String(params[2] || '').split('\n').filter(line => line.trim());
-                    
-                    if (!width || !height || !content.length) {
-                        return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
-                            status: 400,
-                            headers: { 'Content-Type': 'application/json' }
-                        });
+                    const param = url.pathname.split('/generate/')[1];
+                    let imageBuffer;
+                    if (param.startsWith('%3Csvg') || param.startsWith('<svg')) {
+                        const decodedParam = decodeURIComponent(param);
+                        imageBuffer = renderSVG(decodedParam);
+                    } else {
+                        console.log("param", param);
+                        const svg = LZString.decompressFromEncodedURIComponent(param);
+                        console.log("svg", svg);
+                        imageBuffer = renderSVG(svg);
                     }
-                    
-                    const imageBuffer = await generateCollage({ width, height }, content);
-                    
                     return new Response(imageBuffer, {
                         headers: {
                             'Content-Type': 'image/png',
@@ -112,34 +267,56 @@ const server = Bun.serve({
                 }
             }
             
-            // Handle uncompressed parameters as query parameters
-            if (url.pathname === '/generate') {
-                try {
-                    const width = parseInt(String(url.searchParams.get('width') || '200'));
-                    const height = parseInt(String(url.searchParams.get('height') || '200'));
-                    const content = String(url.searchParams.get('content') || '').split('\n').filter(line => line.trim());
-                    
-                    if (!width || !height || !content.length) {
-                        return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
-                            status: 400,
+            // Handle QR code generation
+            if (url.pathname.startsWith('/qr/')) {
+                if (req.method === 'POST') {
+                    try {
+                        const content = url.pathname.split('/qr/')[1];
+                        
+                        // Generate ID: 6 chars (date) + 8 chars (short-unique-uuid)
+                        const now = new Date();
+                        const datePart = `${now.getDate().toString().padStart(2, '0')}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getFullYear().toString().slice(-2)}`;
+                        const short = new ShortUniqueId({ length: 10 });
+                        const uuidPart = short.rnd();
+                        const id = `${datePart}${uuidPart}`;
+                        
+                        const result = await dbOperations.saveQR(id, content);
+                        
+                        return new Response(JSON.stringify({ id: result.id }), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error saving QR:', error);
+                        return new Response(JSON.stringify({ error: 'Failed to save QR' }), {
+                            status: 500,
                             headers: { 'Content-Type': 'application/json' }
                         });
                     }
-                    
-                    const imageBuffer = await generateCollage({ width, height }, content);
-                    
-                    return new Response(imageBuffer, {
-                        headers: {
-                            'Content-Type': 'image/png',
-                            'Content-Disposition': 'inline; filename=collage.png'
+                } else if (req.method === 'GET') {
+                    try {
+                        const id = url.pathname.split('/qr/')[1];
+                        const qr = await dbOperations.getQRById(id);
+                        
+                        if (!qr) {
+                            return new Response(JSON.stringify({ error: 'QR not found' }), {
+                                status: 404,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
                         }
-                    });
-                } catch (error) {
-                    console.error('Error generating collage:', error);
-                    return new Response(JSON.stringify({ error: error.message }), {
-                        status: 500,
-                        headers: { 'Content-Type': 'application/json' }
-                    });
+                        
+                        // Redirect to the generate endpoint with the stored content
+                        return new Response(JSON.stringify({ 
+                            redirect: `${window.location.origin}/generate/${qr.content}` 
+                        }), {
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } catch (error) {
+                        console.error('Error getting QR:', error);
+                        return new Response(JSON.stringify({ error: 'Failed to get QR' }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    }
                 }
             }
             

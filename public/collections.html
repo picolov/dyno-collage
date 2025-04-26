@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pi-Collage Collections</title>
+    <link rel="icon" type="image/png" href="/pi-co.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .title-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .title-container img {
+            width: 50px;
+            height: auto;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .grid-item {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .grid-item:hover {
+            transform: scale(1.02);
+        }
+        .grid-content {
+            padding: 15px;
+        }
+        .grid-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: #333;
+            text-align: center;
+        }
+        .preview-container {
+            width: 100%;
+            height: 200px;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .preview-container canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .grid-item p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .grid-item button {
+            width: 100%;
+            padding: 8px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .grid-item button:hover {
+            background-color: #0056b3;
+        }
+        .collections-link {
+            margin-left: auto;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .collections-link:hover {
+            background-color: #0056b3;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button:hover {
+            background-color: #e9ecef;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination span {
+            color: #666;
+        }
+        .total-count {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .flex {
+            display: flex;
+        }
+        .justify-between {
+            justify-content: space-between;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        <img src="/pi-co.png" alt="Dyno Logo">
+        <h1><span style="color: #ada08a;">pi-</span>Collage Collections</h1>
+        <a href="/" class="collections-link">Create New Collage</a>
+    </div>
+    
+    <!-- Search Bar and Count -->
+    <div class="search-container">
+        <div class="flex justify-between items-center mb-2">
+            <input type="text" id="searchInput" placeholder="Search by name, width, height, or content..." class="search-input" style="width: 90%;">
+            <span class="total-count">Total: <span id="totalCount">0</span></span>
+        </div>
+    </div>
+
+    <!-- Grid Container -->
+    <div id="gridContainer" class="grid-container">
+        <!-- Grid items will be inserted here -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <button id="prevPage">Previous</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextPage">Next</button>
+    </div>
+
+    <script src="/dyno-collage.js"></script>
+    <script src="/lz-string.min.js"></script>
+    <script>
+        let currentPage = 1;
+        const pageSize = 12;
+        let totalPages = 1;
+        let searchQuery = '';
+
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        async function generatePreview(canvas, width, height, content) {
+            try {
+                await window.dynoCollage.generateCollage(
+                    canvas,
+                    { width: parseInt(width), height: parseInt(height) },
+                    content.split('\n').filter(line => line.trim())
+                );
+            } catch (error) {
+                console.error('Preview generation failed:', error);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffe6e6';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'red';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '12px Arial';
+                ctx.fillText('Preview Failed', canvas.width/2, canvas.height/2);
+            }
+        }
+
+        async function updateTotalCount() {
+            try {
+                const response = await fetch(`/api/collages/count?search=${encodeURIComponent(searchQuery)}`);
+                const data = await response.json();
+                document.getElementById('totalCount').textContent = data.total;
+            } catch (error) {
+                console.error('Error getting total count:', error);
+            }
+        }
+
+        async function loadCollages() {
+            try {
+                const response = await fetch(`/api/collages?page=${currentPage}&pageSize=${pageSize}&search=${encodeURIComponent(searchQuery)}`);
+                const data = await response.json();
+                
+                const gridContainer = document.getElementById('gridContainer');
+                gridContainer.innerHTML = '';
+
+                data.collages.forEach(collage => {
+                    const gridItem = document.createElement('div');
+                    gridItem.className = 'grid-item bg-white rounded-lg shadow-md overflow-hidden';
+                    gridItem.innerHTML = `
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold mb-2">${collage.name}</h3>
+                            <div class="preview-container">
+                                <canvas id="preview-${collage.id}" width="${collage.width}" height="${collage.height}"></canvas>
+                            </div>
+                            <p class="text-gray-600 mb-2">Size: ${collage.width}x${collage.height}</p>
+                            <button onclick="window.location.href='/?id=${collage.id}'" 
+                                    class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                                View Collage
+                            </button>
+                        </div>
+                    `;
+                    gridContainer.appendChild(gridItem);
+
+                    // Generate preview
+                    const canvas = document.getElementById(`preview-${collage.id}`);
+                    generatePreview(canvas, collage.width, collage.height, collage.content);
+                });
+
+                totalPages = Math.ceil(data.total / pageSize);
+                updatePaginationUI();
+            } catch (error) {
+                console.error('Error loading collages:', error);
+            }
+        }
+
+        function updatePaginationUI() {
+            const prevButton = document.getElementById('prevPage');
+            const nextButton = document.getElementById('nextPage');
+            const pageInfo = document.getElementById('pageInfo');
+
+            prevButton.disabled = currentPage === 1;
+            nextButton.disabled = currentPage === totalPages;
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+
+        // Event Listeners
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadCollages();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadCollages();
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('input', debounce((e) => {
+            searchQuery = e.target.value;
+            currentPage = 1; // Reset to first page when searching
+            loadCollages();
+            updateTotalCount();
+        }, 300));
+
+        // Initial load
+        loadCollages();
+        updateTotalCount();
+    </script>
+</body>
+</html> 

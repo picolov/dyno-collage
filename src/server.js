@@ -36,6 +36,25 @@ const domain = 'picolov.com';
 const certPath = `/etc/letsencrypt/live/${domain}`;
 let tls = null;
 
+// Function to replace placeholders in HTML templates
+function replaceTemplatePlaceholders(htmlContent) {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const basePath = isProduction ? '/compose' : '';
+    
+    const replacements = {
+        '{{logo_path}}': `${basePath}/pi-co.png`,
+        '{{collection_link}}': `${basePath}/collections`,
+        '{{index_link}}': `${basePath}/`,
+        '{{lz_string_lib_path}}': `${basePath}/lz-string.min.js`
+    };
+    
+    Object.entries(replacements).forEach(([placeholder, value]) => {
+        htmlContent = htmlContent.replace(new RegExp(placeholder, 'g'), value);
+    });
+    
+    return htmlContent;
+}
+
 try {
     // Verify certificate files exist and are readable
     const certFiles = ['privkey.pem', 'cert.pem', 'chain.pem'];
@@ -91,7 +110,14 @@ const server = Bun.serve({
                 if (!await file.exists()) {
                     throw new Error('File not found: index.html');
                 }
-                return new Response(file, {
+                
+                // Read the HTML content
+                let htmlContent = await file.text();
+                
+                // Replace placeholders
+                htmlContent = replaceTemplatePlaceholders(htmlContent);
+                
+                return new Response(htmlContent, {
                     headers: { 'Content-Type': 'text/html' }
                 });
             }
@@ -103,7 +129,14 @@ const server = Bun.serve({
                 if (!await file.exists()) {
                     throw new Error('File not found: collections.html');
                 }
-                return new Response(file, {
+                
+                // Read the HTML content
+                let htmlContent = await file.text();
+                
+                // Replace placeholders
+                htmlContent = replaceTemplatePlaceholders(htmlContent);
+                
+                return new Response(htmlContent, {
                     headers: { 'Content-Type': 'text/html' }
                 });
             }
@@ -271,7 +304,12 @@ const server = Bun.serve({
                     const { width, height } = getSVGDimensions(svg);
                     
                     // Create image URL for preview
-                    const imageUrl = `${url.origin}/png/${param}`;
+                    let imageUrl;
+                    if (process.env.NODE_ENV === 'production') {
+                        imageUrl = `${url.origin}/compose/png/${param}`;
+                    } else {
+                        imageUrl = `${url.origin}/png/${param}`;
+                    }
                     
                     // Create HTML with meta tags
                     const html = `<!DOCTYPE html>

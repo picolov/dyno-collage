@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compose</title>
-    <link rel="icon" type="image/png" href="/pi-co.png">
+    <link rel="icon" type="image/png" href="{{logo_path}}">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -626,9 +626,9 @@
 
 <body>
     <div class="title-container">
-        <img src="/pi-co.png" alt="Dyno Logo">
+        <img src="{{logo_path}}" alt="Dyno Logo">
         <h1><span style="color: #ada08a;">pi-</span>Collage Generator</h1>
-        <a href="/collections" class="collections-link">View Server Collections</a>
+        <a href="{{collection_link}}" class="collections-link">View Server Collections</a>
     </div>
 
     <div class="api-url-container">
@@ -724,7 +724,7 @@
         </div>
     </div>
 
-    <script src="/lz-string.min.js"></script>
+    <script src="{{lz_string_lib_path}}"></script>
     <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script>
         let qrCode = null;

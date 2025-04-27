@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comb-Pose</title>
+    <title>Compose</title>
     <link rel="icon" type="image/png" href="/pi-co.png">
     <style>
         body {
@@ -724,9 +724,8 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/@resvg/resvg-wasm"></script>
     <script src="/lz-string.min.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script>
         let qrCode = null;
         let svgElements = [];
@@ -738,7 +737,7 @@
         const defaultErrorImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZTZlNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSJyZWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkdlbmVyYXRpb24gRmFpbGVkPC90ZXh0Pjwvc3ZnPg==';
 
         // Set the base URL on page load
-        baseUrlLabel.textContent = `${window.location.origin}/generate/`;
+        baseUrlLabel.textContent = `${window.location.origin}/meta/`;
 
         // Initialize SVG editor
         document.addEventListener('DOMContentLoaded', function() {

@@ -73,15 +73,6 @@ const server = Bun.serve({
             const url = new URL(req.url);
             
             // Handle static files
-            if (url.pathname === '/dyno-collage.js') {
-                const file = Bun.file(path.join(__dirname, 'dyno-collage.js'));
-                if (!await file.exists()) {
-                    throw new Error('File not found: dyno-collage.js');
-                }
-                return new Response(file, {
-                    headers: { 'Content-Type': 'application/javascript' }
-                });
-            }
             
             if (url.pathname === '/lz-string.min.js') {
                 const file = Bun.file(path.join(__dirname, 'lz-string.min.js'));
@@ -239,17 +230,15 @@ const server = Bun.serve({
             }
             
             // Handle compressed parameters in URL path
-            if (url.pathname.startsWith('/generate/')) {
+            if (url.pathname.startsWith('/png/')) {
                 try {
-                    const param = url.pathname.split('/generate/')[1];
+                    const param = url.pathname.split('/png/')[1];
                     let imageBuffer;
                     if (param.startsWith('%3Csvg') || param.startsWith('<svg')) {
                         const decodedParam = decodeURIComponent(param);
                         imageBuffer = renderSVG(decodedParam);
                     } else {
-                        console.log("param", param);
                         const svg = LZString.decompressFromEncodedURIComponent(param);
-                        console.log("svg", svg);
                         imageBuffer = renderSVG(svg);
                     }
                     return new Response(imageBuffer, {
@@ -260,6 +249,72 @@ const server = Bun.serve({
                     });
                 } catch (error) {
                     console.error('Error generating collage:', error);
+                    return new Response(JSON.stringify({ error: error.message }), {
+                        status: 500,
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            }
+            
+            // Handle meta preview endpoint
+            if (url.pathname.startsWith('/meta/')) {
+                try {
+                    const param = url.pathname.split('/meta/')[1];
+                    let svg;
+                    if (param.startsWith('%3Csvg') || param.startsWith('<svg')) {
+                        svg = decodeURIComponent(param);
+                    } else {
+                        svg = LZString.decompressFromEncodedURIComponent(param);
+                    }
+                    
+                    // Get dimensions
+                    const { width, height } = getSVGDimensions(svg);
+                    
+                    // Create image URL for preview
+                    const imageUrl = `${url.origin}/png/${param}`;
+                    
+                    // Create HTML with meta tags
+                    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dyno Collage</title>
+    
+    <!-- Open Graph / Facebook / WhatsApp / Slack -->
+    <meta property="og:image" content="${imageUrl}">
+    <meta property="og:description" content="Check out this collage">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="${imageUrl}">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: white;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <img src="${imageUrl}" alt="Collage" />
+</body>
+</html>`;
+                    
+                    return new Response(html, {
+                        headers: { 'Content-Type': 'text/html' }
+                    });
+                } catch (error) {
+                    console.error('Error generating meta preview:', error);
                     return new Response(JSON.stringify({ error: error.message }), {
                         status: 500,
                         headers: { 'Content-Type': 'application/json' }

@@ -21,7 +21,6 @@
             margin: 0 auto;
             padding: 20px;
             background-color: white;
-            background-image: url("{{dynamic_background}}");
         }
 
         .title-container {
@@ -337,7 +336,7 @@
     <div class="title-container">
         <img src="/pi-co.png" alt="Dyno Logo">
         <h1><span style="color: #ada08a;">pi-</span>Collage Collections</h1>
-        <a href="/" class="collections-link">
+        <a href="#" class="collections-link" id="editor-link">
             <i class="fas fa-edit"></i>
             <span>Go To Editor</span>
         </a>
@@ -399,6 +398,10 @@
 
     <script src="/lz-string.min.js"></script>
     <script>
+        const projectRootUrl = `${window.location.origin}{{project_root_url}}`;
+        // Set the editor link href
+        document.getElementById('editor-link').href = projectRootUrl;
+        
         // Add tab styles
 
         // Tab switching functionality
@@ -659,7 +662,7 @@
         // Collages functions
         async function updateCollagesTotalCount() {
             try {
-                const response = await fetch(`{{project_root_url}}api/collages/count?search=${encodeURIComponent(collagesSearchQuery)}`);
+                const response = await fetch(`${projectRootUrl}api/collages/count?search=${encodeURIComponent(collagesSearchQuery)}`);
                 const data = await response.json();
                 document.getElementById('collagesTotalCount').textContent = data.total;
             } catch (error) {
@@ -670,7 +673,7 @@
 
         async function loadCollages() {
             try {
-                const response = await fetch(`{{project_root_url}}api/collages?page=${collagesCurrentPage}&pageSize=${collagesPageSize}&search=${encodeURIComponent(collagesSearchQuery)}`);
+                const response = await fetch(`${projectRootUrl}api/collages?page=${collagesCurrentPage}&pageSize=${collagesPageSize}&search=${encodeURIComponent(collagesSearchQuery)}`);
                 const data = await response.json();
                 
                 const gridContainer = document.getElementById('collagesGridContainer');
@@ -744,7 +747,7 @@
         // Templates functions
         async function updateTemplatesTotalCount() {
             try {
-                const response = await fetch(`{{project_root_url}}api/templates/count?search=${encodeURIComponent(templatesSearchQuery)}`);
+                const response = await fetch(`${projectRootUrl}api/templates/count?search=${encodeURIComponent(templatesSearchQuery)}`);
                 const data = await response.json();
                 document.getElementById('templatesTotalCount').textContent = data.total;
             } catch (error) {
@@ -755,7 +758,7 @@
 
         async function loadTemplates() {
             try {
-                const response = await fetch(`{{project_root_url}}api/templates?page=${templatesCurrentPage}&pageSize=${templatesPageSize}&search=${encodeURIComponent(templatesSearchQuery)}`);
+                const response = await fetch(`${projectRootUrl}api/templates?page=${templatesCurrentPage}&pageSize=${templatesPageSize}&search=${encodeURIComponent(templatesSearchQuery)}`);
                 const data = await response.json();
                 
                 const gridContainer = document.getElementById('templatesGridContainer');

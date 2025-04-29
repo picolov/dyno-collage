@@ -22,7 +22,6 @@
             margin: 0 auto;
             padding: 20px;
             background-color: white;
-            background-image: url("{{dynamic_background}}");
         }
 
         .title-container {
@@ -2104,7 +2103,7 @@
             const params = svgCode.match(/{(param\d+)}/g);
             if (templateId) {
                 // Generate QR code with the returned ID
-                const qrUrl = `${window.location.origin}/image/${templateId}/${params.map(param => param.replace('{', '').replace('}', '')).join('/')}`;
+                const qrUrl = `${baseUrlLabel.textContent}/image/${templateId}/${params.map(param => param.replace('{', '').replace('}', '')).join('/')}`;
 
                 // Initialize QR code with styling
                 const qrCodeElement = document.getElementById('qrCode');
@@ -2166,7 +2165,7 @@
                                 throw new Error(data.error);
                             }
                             // Generate QR code with the returned ID
-                            const qrUrl = `${window.location.origin}/qr/${data.id}`;
+                            const qrUrl = `${baseUrlLabel.textContent}/qr/${data.id}`;
 
                             // Initialize QR code with styling
                             const qrCodeElement = document.getElementById('qrCode');

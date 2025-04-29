@@ -6,12 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compose</title>
     <link rel="icon" type="image/png" href="{{logo_path}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-brown: #6f5c4b;
+            --primary-brown-darker: #5a4a3c;
+            --primary-brown-lighter: #8a7663;
+            --primary-brown-light: #cfc0b3;
+            --primary-brown-lightest: #f4f0eb;
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background-color: white;
+            background-image: url("{{dynamic_background}}");
         }
 
         .title-container {
@@ -33,27 +44,181 @@
         label {
             display: block;
             margin-bottom: 5px;
+            color: var(--primary-brown);
         }
 
         input,
         textarea,
         select {
             width: 100%;
+            box-sizing: border-box;
             padding: 8px;
             margin-bottom: 5px;
+            border: 1px solid var(--primary-brown-light);
+            border-radius: 4px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-brown);
+            box-shadow: 0 0 0 2px var(--primary-brown-light);
         }
 
         button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: var(--primary-brown);
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 4px;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 var(--primary-brown-darker);
+            transform: translateY(0);
         }
 
         button:hover {
-            background-color: #0056b3;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--primary-brown-darker);
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--primary-brown-darker);
+        }
+
+        .icon-btn {
+            padding: 5px 5px;
+            min-width: 50px;
+            height: auto;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+        }
+
+        .icon-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .icon-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .icon-btn i {
+            font-size: 1.5em;
+        }
+
+        .icon-btn i+span {
+            margin-left: 5px;
+        }
+
+        .whatsapp-btn {
+            background-color: #25D366;
+            box-shadow: 0 4px 0 #1da851;
+        }
+
+        .whatsapp-btn:hover {
+            background-color: #1da851;
+            box-shadow: 0 2px 0 #1da851;
+        }
+
+        .whatsapp-btn:active {
+            box-shadow: 0 0 0 #1da851;
+        }
+
+        .slack-btn {
+            background-color: #b03bb2;
+            box-shadow: 0 4px 0 #9a349c;
+        }
+
+        .slack-btn:hover {
+            background-color: #9a349c;
+            box-shadow: 0 2px 0 #9a349c;
+        }
+
+        .slack-btn:active {
+            box-shadow: 0 0 0 #9a349c;
+        }
+
+        .instagram-btn {
+            background-color: #E4405F;
+            box-shadow: 0 4px 0 #c13554;
+        }
+
+        .instagram-btn:hover {
+            background-color: #c13554;
+            box-shadow: 0 2px 0 #c13554;
+        }
+
+        .instagram-btn:active {
+            box-shadow: 0 0 0 #c13554;
+        }
+
+        .telegram-btn {
+            background-color: #0088cc;
+            box-shadow: 0 4px 0 #0077b3;
+        }
+
+        .telegram-btn:hover {
+            background-color: #0077b3;
+            box-shadow: 0 2px 0 #0077b3;
+        }
+
+        .telegram-btn:active {
+            box-shadow: 0 0 0 #0077b3;
+        }
+
+        .twitter-btn {
+            background-color: #1DA1F2;
+            box-shadow: 0 4px 0 #1a8cd8;
+        }
+
+        .twitter-btn:hover {
+            background-color: #1a8cd8;
+            box-shadow: 0 2px 0 #1a8cd8;
+        }
+
+        .twitter-btn:active {
+            box-shadow: 0 0 0 #1a8cd8;
+        }
+
+        .qr-btn {
+            background-color: #6c757d;
+            box-shadow: 0 4px 0 #5a6268;
+        }
+
+        .qr-btn:hover {
+            background-color: #5a6268;
+            box-shadow: 0 2px 0 #5a6268;
+        }
+
+        .qr-btn:active {
+            box-shadow: 0 0 0 #5a6268;
+        }
+
+        .paste-btn {
+            background-color: #6c757d;
+        }
+
+        .paste-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .image-btn {
+            background-color: var(--primary-brown);
+        }
+
+        .image-btn:hover {
+            background-color: var(--primary-brown-darker);
         }
 
         #result {
@@ -73,7 +238,7 @@
         .qr-section {
             padding: 15px;
             background: white;
-            border: 1px solid #ddd;
+            border: 1px solid var(--primary-brown-light);
             border-radius: 4px;
             min-width: 200px;
             text-align: center;
@@ -82,12 +247,12 @@
         .qr-section h3 {
             margin: 0 0 10px 0;
             font-size: 1em;
-            color: #666;
+            color: var(--primary-brown);
         }
 
         .help-text {
             font-size: 0.9em;
-            color: #666;
+            color: var(--primary-brown);
             margin-top: 5px;
         }
 
@@ -104,7 +269,7 @@
 
         .size-inputs span {
             font-size: 1.2em;
-            color: #666;
+            color: var(--primary-brown);
         }
 
         .controls {
@@ -115,23 +280,24 @@
         }
 
         .copy-btn {
-            background-color: #6c757d;
+            background-color: var(--primary-brown);
         }
 
         .copy-btn:hover {
-            background-color: #5a6268;
+            background-color: var(--primary-brown-darker);
         }
 
         .api-url-container {
             margin-top: 20px;
             padding: 10px;
-            background: #f8f9fa;
+            background: var(--primary-brown-lightest);
             border-radius: 4px;
             width: 100%;
             box-sizing: border-box;
             display: flex;
             gap: 20px;
             align-items: flex-start;
+            border: 1px solid var(--primary-brown-light);
         }
 
         .api-url-content {
@@ -142,7 +308,7 @@
             font-family: monospace;
             font-size: 0.9em;
             background: white;
-            border: 1px solid #ddd;
+            border: 1px solid var(--primary-brown-light);
             padding: 8px;
             margin-bottom: 5px;
             width: 100%;
@@ -156,166 +322,40 @@
             display: none;
         }
 
-        .url-format-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        .url-format-option {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .url-format-option input[type="radio"] {
-            margin: 0;
-            width: auto;
-        }
-
-        .url-format-option label {
-            margin: 0;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .content-group {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            background: #f8f9fa;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .content-input-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-
-        .content-type-select {
-            width: 120px;
-            padding: 8px;
-            border: 1px solid #767676;
-            border-radius: 4px;
-        }
-
-        .content-value-input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #767676;
-            border-radius: 4px;
-        }
-
-        .content-group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .content-group-header h3 {
-            margin: 0;
-            font-size: 1em;
-            color: #666;
-        }
-
-        .content-group-header button {
-            padding: 5px 10px;
-            font-size: 0.8em;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .content-group-header button:hover {
-            background-color: #c82333;
-        }
-
-        .transformations {
-            margin-top: 10px;
-        }
-
-        .transformation-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-
-        .transformation-row select {
-            width: 120px;
-        }
-
-        .transformation-row .input-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-
-        .transformation-row input {
-            flex: 1;
-            padding-right: 120px;
-            /* Make space for the value info */
-        }
-
-        .transformation-row .value-info {
-            position: absolute;
-            right: 8px;
-            color: #666;
-            font-size: 0.8em;
-            white-space: nowrap;
-            background-color: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 3px;
-            pointer-events: none;
-        }
-
-        .transformation-row button {
-            padding: 5px 10px;
-            background-color: #dc3545;
-        }
-
-        .transformation-row button:hover {
-            background-color: #c82333;
-        }
-
-        .add-transformation-btn {
-            width: 100%;
-            margin-top: 5px;
-            background-color: #28a745;
-        }
-
-        .add-transformation-btn:hover {
-            background-color: #218838;
-        }
-
-        .add-content-group-btn {
-            width: 100%;
-            margin-top: 10px;
-            background-color: #28a745;
-        }
-
-        .add-content-group-btn:hover {
-            background-color: #218838;
-        }
-
         .collections-link {
             margin-left: auto;
             padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
+            background-color: #d4c4b5;
+            color: #6f5c4b;
             text-decoration: none;
             border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #c0b2a4;
+            transform: translateY(0);
         }
 
         .collections-link:hover {
-            background-color: #0056b3;
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+            transform: translateY(2px);
+            color: #6f5c4b;
+        }
+
+        .collections-link:active {
+            box-shadow: 0 0 0 #c0b2a4;
+            transform: translateY(4px);
+        }
+
+        .collections-link i {
+            font-size: 1.2em;
+        }
+
+        .properties-form input[type="color"] {
+            padding: 0 2px;
         }
 
         .save-modal {
@@ -363,10 +403,31 @@
 
         .save-modal-buttons .cancel-btn {
             background-color: #6c757d;
+            box-shadow: 0 4px 0 #5a6268;
+        }
+
+        .save-modal-buttons .cancel-btn:hover {
+            background-color: #5a6268;
+            box-shadow: 0 2px 0 #5a6268;
+        }
+
+        .save-modal-buttons .cancel-btn:active {
+            box-shadow: 0 0 0 #5a6268;
         }
 
         .save-modal-buttons .save-btn {
-            background-color: #28a745;
+            background-color: #d4c4b5;
+            color: #6f5c4b;
+            box-shadow: 0 4px 0 #c0b2a4;
+        }
+
+        .save-modal-buttons .save-btn:hover {
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+        }
+
+        .save-modal-buttons .save-btn:active {
+            box-shadow: 0 0 0 #c0b2a4;
         }
 
         .content-length-warning {
@@ -434,6 +495,16 @@
 
         .qr-modal-buttons .close-btn {
             background-color: #6c757d;
+            box-shadow: 0 4px 0 #5a6268;
+        }
+
+        .qr-modal-buttons .close-btn:hover {
+            background-color: #5a6268;
+            box-shadow: 0 2px 0 #5a6268;
+        }
+
+        .qr-modal-buttons .close-btn:active {
+            box-shadow: 0 0 0 #5a6268;
         }
 
         .svg-editor {
@@ -448,7 +519,6 @@
         }
 
         .preview-container {
-            width: 100%;
             padding: 15px;
             background: white;
             border: 1px solid #ddd;
@@ -477,7 +547,7 @@
             max-width: 100%;
             max-height: 100%;
             display: block;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
         #svg-code {
@@ -493,7 +563,6 @@
         }
 
         .editor-tools {
-            width: 100%;
             padding: 15px;
             background: white;
             border: 1px solid #ddd;
@@ -519,16 +588,70 @@
         }
 
         .tool-buttons button {
-            flex: 1;
-            min-width: 100px;
-            padding: 8px 5px;
-            font-size: 0.9em;
+            background-color: #d4c4b5;
+            color: #6f5c4b;
+            border: none;
+            box-shadow: 0 4px 0 #c0b2a4;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            position: relative;
+            transition: all 0.1s ease;
+            transform: translateY(0);
         }
 
-        .properties-form {
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
+        .tool-buttons button:hover {
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+            transform: translateY(2px);
+        }
+
+        .tool-buttons button:active {
+            box-shadow: 0 0 0 #c0b2a4;
+            transform: translateY(4px);
+        }
+
+        .saveToServer-btn,
+        .download-btn {
+            background-color: #d4c4b5;
+            color: #6f5c4b;
+            box-shadow: 0 4px 0 #c0b2a4;
+        }
+
+        .saveToServer-btn:hover,
+        .download-btn:hover {
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+        }
+
+        .saveToServer-btn:active,
+        .download-btn:active {
+            box-shadow: 0 0 0 #c0b2a4;
+        }
+
+        .properties-form button {
+            background-color: #d4c4b5;
+            color: #6f5c4b;
+            box-shadow: 0 4px 0 #c0b2a4;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            position: relative;
+            transition: all 0.1s ease;
+            transform: translateY(0);
+        }
+
+        .properties-form button:hover {
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+            transform: translateY(2px);
+        }
+
+        .properties-form button:active {
+            box-shadow: 0 0 0 #c0b2a4;
+            transform: translateY(4px);
         }
 
         #no-selection-message {
@@ -543,16 +666,6 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 15px;
-        }
-
-        .editor-actions button {
-            padding: 8px 15px;
-            background-color: #007bff;
-        }
-
-        .editor-actions button:hover {
-            background-color: #0056b3;
         }
 
         .elements-list {
@@ -594,23 +707,23 @@
             background-color: #6c757d;
             margin-right: 8px;
         }
-        
+
         .element-type.text {
             background-color: #28a745;
         }
-        
+
         .element-type.image {
             background-color: #fd7e14;
         }
-        
+
         .element-type.rect {
             background-color: #dc3545;
         }
-        
+
         .element-type.circle {
             background-color: #007bff;
         }
-        
+
         .element-type.path {
             background-color: #6610f2;
         }
@@ -621,14 +734,118 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .preview-header h3 {
+            margin: 0;
+        }
+
+        .editor-actions button {
+            padding: 8px 15px;
+            background-color: #d4c4b5;
+            color: #6f5c4b;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #c0b2a4;
+        }
+
+        .editor-actions button:hover {
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+        }
+
+        .editor-actions button:active {
+            box-shadow: 0 0 0 #c0b2a4;
+        }
+
+        .properties-form {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .properties-form .form-group {
+            margin-bottom: 15px;
+        }
+
+        .properties-form .form-group:last-child {
+            margin-bottom: 0;
+            text-align: right;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: #fff;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast.warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="toast-container"></div>
     <div class="title-container">
         <img src="{{logo_path}}" alt="Dyno Logo">
         <h1><span style="color: #ada08a;">pi-</span>Collage Generator</h1>
-        <a href="{{collection_link}}" class="collections-link">View Server Collections</a>
+        <a href="{{collection_link}}" class="collections-link">
+            <i class="fas fa-server"></i>
+            <span>View Server Collections</span>
+        </a>
     </div>
 
     <div class="api-url-container">
@@ -636,9 +853,24 @@
             <label for="apiUrl">IMAGE URL : <span id="baseUrl" style="font-family: monospace;"></span></label>
             <input type="text" id="apiUrl" class="api-url-input">
             <div class="controls">
-                <button class="copy-btn" onclick="pasteFromClipboard()">Paste URL from Clipboard and Fill Form</button>
-                <button class="copy-btn" onclick="copyApiUrl()">Copy URL to Clipboard</button>
-                <button class="copy-btn" onclick="showQRModal()">Share QR Code</button>
+                <button class="icon-btn whatsapp-btn" onclick="copyApiUrl('whatsapp')" title="Share to WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </button>
+                <button class="icon-btn slack-btn" onclick="copyApiUrl('slack')" title="Share to Slack">
+                    <i class="fab fa-slack"></i>
+                </button>
+                <button class="icon-btn instagram-btn" onclick="copyApiUrl('instagram')" title="Share to Instagram">
+                    <i class="fab fa-instagram"></i>
+                </button>
+                <button class="icon-btn telegram-btn" onclick="copyApiUrl('telegram')" title="Share to Telegram">
+                    <i class="fab fa-telegram"></i>
+                </button>
+                <button class="icon-btn twitter-btn" onclick="copyApiUrl('twitter')" title="Share to Twitter">
+                    <i class="fab fa-twitter"></i>
+                </button>
+                <button class="icon-btn qr-btn" onclick="showQRModal()" title="Generate QR Code">
+                    <i class="fas fa-qrcode"></i> <span>QR Code</span>
+                </button>
             </div>
             <div id="copyMessage" class="copy-message">URL copied to clipboard!</div>
         </div>
@@ -658,68 +890,101 @@
         <div class="form-group">
             <label>Canvas Size:</label>
             <div class="size-inputs">
-                <input type="number" id="width" value="400" min="50" max="2000"> 
-                <span>×</span> 
+                <input type="number" id="width" value="400" min="50" max="2000">
+                <span>×</span>
                 <input type="number" id="height" value="400" min="50" max="2000">
             </div>
         </div>
-        
+
         <div class="editor-container">
             <div class="preview-container">
-                <h3>Preview</h3>
+                <div class="preview-header">
+                    <h3>Preview</h3>
+                    <div class="editor-actions">
+                        <button class="icon-btn saveToServer-btn" onclick="showSaveModal()" title="Save to Server">
+                            <i class="fas fa-cloud-arrow-up"></i> <span>Save to Server</span>
+                        </button>
+                        <button class="icon-btn download-btn" onclick="downloadImage()" title="Download">
+                            <i class="fas fa-download"></i> <span>Download</span>
+                        </button>
+                    </div>
+                </div>
                 <div id="svg-preview">
                     <canvas id="preview-canvas"></canvas>
                 </div>
                 <textarea id="svg-code" readonly style="display: none;"></textarea>
+                <div id="contentLengthWarning" class="content-length-warning">Content exceeds maximum length (2000
+                    characters)</div>
+                <div id="contentLengthInfo" class="content-length-info">Content length: <span
+                        id="contentLength">0</span>/2000</div>
             </div>
-            
+
             <div class="editor-tools">
                 <div class="tool-section">
                     <h3>Add Element</h3>
                     <div class="tool-buttons">
-                        <button onclick="addText()">Add Text</button>
-                        <button onclick="addImage()">Add Image</button>
-                        <button onclick="addRect()">Add Rectangle</button>
-                        <button onclick="addCircle()">Add Circle</button>
-                        <button onclick="addPath()">Add Path</button>
+                        <button onclick="addText()">
+                            <i class="fas fa-font"></i>
+                            <span>Text</span>
+                        </button>
+                        <button onclick="addImage()">
+                            <i class="fas fa-image"></i>
+                            <span>Image</span>
+                        </button>
+                        <button onclick="addRect()">
+                            <i class="fas fa-square"></i>
+                            <span>Rectangle</span>
+                        </button>
+                        <button onclick="addCircle()">
+                            <i class="fas fa-circle"></i>
+                            <span>Circle</span>
+                        </button>
+                        <button onclick="addPath()">
+                            <i class="fas fa-draw-polygon"></i>
+                            <span>Path</span>
+                        </button>
                     </div>
                 </div>
-                
+
                 <div class="tool-section">
                     <h3>Elements</h3>
                     <div id="elements-list" class="elements-list">
-                        <div id="no-elements-message" style="padding: 10px; color: #999; font-style: italic;">No elements added yet</div>
+                        <div id="no-elements-message" style="padding: 10px; color: #999; font-style: italic;">No
+                            elements added yet</div>
                     </div>
                 </div>
-                
+
                 <div id="element-properties" class="tool-section">
                     <h3>Properties</h3>
                     <div id="no-selection-message">Select an element to edit its properties</div>
                     <!-- Properties will be dynamically added here -->
                 </div>
-                
+
                 <div id="contentGroups">
                     <!-- Content items will be added here -->
-                </div>
-                
-                <div id="contentLengthWarning" class="content-length-warning">Content exceeds maximum length (2000 characters)</div>
-                <div id="contentLengthInfo" class="content-length-info">Content length: <span id="contentLength">0</span>/2000</div>
-                
-                <div class="editor-actions">
-                    <button onclick="showSaveModal()">Save Image to Server</button>
-                    <button onclick="downloadImage()">Download Image</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="saveModal" class="save-modal">
+    <div id="saveImageModal" class="save-modal">
         <div class="save-modal-content">
-            <h2>Save Collage</h2>
-            <input type="text" id="collageName" placeholder="Enter collage name">
+            <h2>Save Image</h2>
+            <input type="text" id="imageName" placeholder="Enter image name">
             <div class="save-modal-buttons">
-                <button class="cancel-btn" onclick="hideSaveModal()">Cancel</button>
-                <button class="save-btn" onclick="saveCollage()">Save</button>
+                <button class="cancel-btn" onclick="hideSaveImageModal()">Cancel</button>
+                <button class="save-btn" onclick="saveImage()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveTemplateModal" class="save-modal">
+        <div class="save-modal-content">
+            <h2>Save Template</h2>
+            <input type="text" id="templateId" placeholder="Enter template name">
+            <div class="save-modal-buttons">
+                <button class="cancel-btn" onclick="hideSaveTemplateModal()">Cancel</button>
+                <button class="save-btn" onclick="saveTemplate()">Save</button>
             </div>
         </div>
     </div>
@@ -730,17 +995,146 @@
         let qrCode = null;
         let svgElements = [];
         let selectedElement = null;
-        
+
         const baseUrlLabel = document.getElementById('baseUrl');
         const apiUrlInput = document.getElementById('apiUrl');
         const copyMessage = document.getElementById('copyMessage');
+        const svgCodeLabel = document.getElementById('svg-code');
         const defaultErrorImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZTZlNiIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSJyZWQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkdlbmVyYXRpb24gRmFpbGVkPC90ZXh0Pjwvc3ZnPg==';
 
+        // Helper function to ensure color is in #RRGGBB format
+        function formatColor(color) {
+            if (!color) return '#000000';
+            if (color.startsWith('#')) {
+                if (color.length === 4) { // #RGB format
+                    return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
+                }
+                if (color.length === 7) { // #RRGGBB format
+                    return color;
+                }
+            }
+            return '#000000'; // Default to black if format is unknown
+        }
+
+        // Function to generate dynamic background
+        function generateDynamicBackground() {
+            const now = new Date();
+
+            // Format date and time
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear());
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+
+            // Create array of all characters
+            const dateTimeStr = `${day}${month}${year}-${hours}${mins}${secs}`;
+            const chars = dateTimeStr.split('');
+
+            // Number of lines equals number of characters plus one (for the last line)
+            const numLines = chars.length;
+
+            // Create SVG for background
+            let lineElements = '';
+            let textElements = '';
+            const baseColor = '#6f5c4b';
+
+            // Define SVG boundaries
+            const SVG_WIDTH = 200;
+            const SVG_HEIGHT = 200;
+
+            // Calculate line width and spacing
+            const lineWidth = 1;
+            const spacing = SVG_WIDTH / numLines;
+
+            // Initialize or update character positions and directions
+            if (!window.charPositions) {
+                window.charPositions = {};
+            }
+            if (!window.charDirections) {
+                window.charDirections = {};
+            }
+
+            // Generate vertical lines with time-based positioning
+            for (let i = 0; i < numLines; i++) {
+                // Calculate x position ensuring lines are evenly spaced
+                const x = i * spacing;
+                const opacity = 0.1;
+
+                lineElements += `<line 
+                    x1="${x}" 
+                    y1="0" 
+                    x2="${x}" 
+                    y2="${SVG_HEIGHT}" 
+                    stroke="${baseColor}" 
+                    stroke-width="${lineWidth}" 
+                    stroke-opacity="${opacity}"/>`;
+
+                // Add text elements in the gaps between lines
+                if (i < chars.length) {
+                    const gapStart = x + lineWidth;
+                    const gapEnd = (i + 1) * spacing;
+                    const gapWidth = gapEnd - gapStart;
+
+                    // Position character horizontally in the center of the gap
+                    const charX = gapStart + (gapWidth / 2) - 4; // -4 to center the character
+
+                    // Get or initialize character position and direction
+                    const charKey = `key_${i}`;
+                    if (!window.charPositions[charKey]) {
+                        window.charPositions[charKey] = 20 + (Math.random() * (SVG_HEIGHT - 40));
+                        // Randomly assign initial direction (1 for down, -1 for up)
+                        window.charDirections[charKey] = Math.random() > 0.5 ? 1 : -1;
+                    } else {
+                        // Move character by 0.1px in current direction
+                        window.charPositions[charKey] += 0.1 * window.charDirections[charKey];
+
+                        // Check boundaries and switch direction if needed
+                        if (window.charPositions[charKey] > SVG_HEIGHT - 20) {
+                            window.charPositions[charKey] = SVG_HEIGHT - 20;
+                            window.charDirections[charKey] = -1; // Switch to moving up
+                        } else if (window.charPositions[charKey] < 20) {
+                            window.charPositions[charKey] = 20;
+                            window.charDirections[charKey] = 1; // Switch to moving down
+                        }
+                    }
+
+                    const charY = window.charPositions[charKey];
+
+                    textElements += `<text 
+                        x="${charX + 3}" 
+                        y="${charY}" 
+                        font-family="monospace" 
+                        font-size="14" 
+                        text-anchor="middle"
+                        fill="${baseColor}" 
+                        fill-opacity="0.1">${chars[i]}</text>`;
+                }
+            }
+
+            // Create raw SVG content with lines and text
+            const svgContent = `<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                ${lineElements}
+                ${textElements}
+            </svg>`;
+
+            // Convert SVG to data URL
+            const svgDataUrl = `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
+
+            // Update the background style
+            document.body.style.backgroundImage = `url("${svgDataUrl}")`;
+        }
+
+        // Initialize background and update it every 100ms for smoother animation
+        generateDynamicBackground();
+        setInterval(generateDynamicBackground, 1000);
+
         // Set the base URL on page load
-        baseUrlLabel.textContent = `${window.location.origin}/meta/`;
+        baseUrlLabel.textContent = `${window.location.origin}{{project_root_url}}`;
 
         // Initialize SVG editor
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initSvgEditor();
             loadCollageFromId();
         });
@@ -748,11 +1142,11 @@
         function initSvgEditor() {
             // Create initial SVG
             updateSvgPreview();
-            
+
             // Add event listeners to size inputs
             document.getElementById('width').addEventListener('input', updateSvgPreview);
             document.getElementById('height').addEventListener('input', updateSvgPreview);
-            
+
             // Initialize elements list
             updateElementsList();
         }
@@ -760,18 +1154,18 @@
         function updateElementsList() {
             const listContainer = document.getElementById('elements-list');
             const noElementsMessage = document.getElementById('no-elements-message');
-            
+
             // Clear the current list
             while (listContainer.firstChild) {
                 listContainer.removeChild(listContainer.firstChild);
             }
-            
+
             // Show message if no elements
             if (svgElements.length === 0) {
                 listContainer.appendChild(noElementsMessage);
                 return;
             }
-            
+
             // Add each element to the list
             svgElements.forEach(element => {
                 const elementItem = document.createElement('div');
@@ -780,17 +1174,17 @@
                 if (selectedElement && selectedElement.id === element.id) {
                     elementItem.classList.add('selected');
                 }
-                
+
                 // Add element type badge
                 const typeBadge = document.createElement('span');
                 typeBadge.className = `element-type ${element.type}`;
                 typeBadge.textContent = element.type.charAt(0).toUpperCase() + element.type.slice(1);
-                
+
                 // Add element name/description
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'element-name';
                 let description = '';
-                switch(element.type) {
+                switch (element.type) {
                     case 'text':
                         description = element.text.substring(0, 20) + (element.text.length > 20 ? '...' : '');
                         break;
@@ -809,17 +1203,17 @@
                         break;
                 }
                 nameSpan.textContent = description;
-                
+
                 // Assemble the element item
                 elementItem.appendChild(typeBadge);
                 elementItem.appendChild(nameSpan);
-                
+
                 // Add click event
                 elementItem.addEventListener('click', () => {
                     const foundElement = svgElements.find(el => el.id === element.id);
                     if (foundElement) {
                         selectElement(foundElement);
-                        
+
                         // Update selected state in list
                         document.querySelectorAll('.element-item').forEach(item => {
                             item.classList.remove('selected');
@@ -827,7 +1221,7 @@
                         elementItem.classList.add('selected');
                     }
                 });
-                
+
                 listContainer.appendChild(elementItem);
             });
         }
@@ -844,7 +1238,7 @@
                 fill: '#000000',
                 textAnchor: 'middle'
             };
-            
+
             svgElements.push(element);
             updateSvgPreview();
             selectElement(element);
@@ -861,7 +1255,7 @@
                 height: 100,
                 href: prompt('Enter image URL:') || 'https://via.placeholder.com/100'
             };
-            
+
             svgElements.push(element);
             updateSvgPreview();
             selectElement(element);
@@ -882,7 +1276,7 @@
                 rx: 5,
                 ry: 5
             };
-            
+
             svgElements.push(element);
             updateSvgPreview();
             selectElement(element);
@@ -900,7 +1294,7 @@
                 stroke: '#000',
                 strokeWidth: 2
             };
-            
+
             svgElements.push(element);
             updateSvgPreview();
             selectElement(element);
@@ -916,7 +1310,7 @@
                 stroke: '#000',
                 strokeWidth: 2
             };
-            
+
             svgElements.push(element);
             updateSvgPreview();
             selectElement(element);
@@ -925,14 +1319,14 @@
 
         function selectElement(element) {
             selectedElement = element;
-            
+
             // Update properties panel
             const propertiesPanel = document.getElementById('element-properties');
             propertiesPanel.innerHTML = '<h3>Properties</h3>';
-            
+
             const form = document.createElement('div');
             form.className = 'properties-form';
-            
+
             // Add common properties
             // form.innerHTML += `
             //     <div class="form-group">
@@ -940,9 +1334,9 @@
             //         <input type="text" id="prop-id" value="${element.id}" readonly>
             //     </div>
             // `;
-            
+
             // Add properties based on element type
-            switch(element.type) {
+            switch (element.type) {
                 case 'text':
                     form.innerHTML += `
                         <div class="form-group">
@@ -972,7 +1366,7 @@
                         </div>
                         <div class="form-group">
                             <label>Fill Color</label>
-                            <input type="color" id="prop-fill" value="${element.fill}">
+                            <input type="color" id="prop-fill" value="${formatColor(element.fill)}">
                         </div>
                         <div class="form-group">
                             <label>Text Anchor</label>
@@ -1036,11 +1430,11 @@
                         </div>
                         <div class="form-group">
                             <label>Fill Color</label>
-                            <input type="color" id="prop-fill" value="${element.fill}">
+                            <input type="color" id="prop-fill" value="${formatColor(element.fill)}">
                         </div>
                         <div class="form-group">
                             <label>Stroke Color</label>
-                            <input type="color" id="prop-stroke" value="${element.stroke}">
+                            <input type="color" id="prop-stroke" value="${formatColor(element.stroke)}">
                         </div>
                         <div class="form-group">
                             <label>Stroke Width</label>
@@ -1064,11 +1458,11 @@
                         </div>
                         <div class="form-group">
                             <label>Fill Color</label>
-                            <input type="color" id="prop-fill" value="${element.fill}">
+                            <input type="color" id="prop-fill" value="${formatColor(element.fill)}">
                         </div>
                         <div class="form-group">
                             <label>Stroke Color</label>
-                            <input type="color" id="prop-stroke" value="${element.stroke}">
+                            <input type="color" id="prop-stroke" value="${formatColor(element.stroke)}">
                         </div>
                         <div class="form-group">
                             <label>Stroke Width</label>
@@ -1084,11 +1478,11 @@
                         </div>
                         <div class="form-group">
                             <label>Fill Color</label>
-                            <input type="color" id="prop-fill" value="${element.fill}">
+                            <input type="color" id="prop-fill" value="${formatColor(element.fill)}">
                         </div>
                         <div class="form-group">
                             <label>Stroke Color</label>
-                            <input type="color" id="prop-stroke" value="${element.stroke}">
+                            <input type="color" id="prop-stroke" value="${formatColor(element.stroke)}">
                         </div>
                         <div class="form-group">
                             <label>Stroke Width</label>
@@ -1097,26 +1491,29 @@
                     `;
                     break;
             }
-            
+
             // Add delete button
             form.innerHTML += `
                 <div class="form-group">
-                    <button onclick="deleteSelectedElement()">Delete Element</button>
+                    <button onclick="deleteSelectedElement()">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Element</span>
+                    </button>
                 </div>
             `;
-            
+
             propertiesPanel.appendChild(form);
-            
+
             // Add event listeners to property inputs
             const inputs = form.querySelectorAll('input, select');
             inputs.forEach(input => {
                 input.addEventListener('change', updateElementProperty);
             });
-            
+
             // Update selected state in elements list
             document.querySelectorAll('.element-item').forEach(item => {
                 item.classList.remove('selected');
-                
+
                 // Find and select the matching element
                 const elementId = item.getAttribute('data-id');
                 if (elementId === element.id) {
@@ -1127,15 +1524,15 @@
 
         function updateElementProperty(event) {
             if (!selectedElement) return;
-            
+
             const propName = event.target.id.replace('prop-', '');
             let value = event.target.value;
-            
+
             // Convert numeric values
             if (['x', 'y', 'cx', 'cy', 'width', 'height', 'fontSize', 'r', 'rx', 'ry', 'strokeWidth'].includes(propName)) {
                 value = parseFloat(value);
             }
-            
+
             selectedElement[propName] = value;
             updateSvgPreview();
             updateElementsList();
@@ -1143,16 +1540,16 @@
 
         function deleteSelectedElement() {
             if (!selectedElement) return;
-            
+
             const index = svgElements.findIndex(el => el.id === selectedElement.id);
             if (index !== -1) {
                 svgElements.splice(index, 1);
                 selectedElement = null;
-                
+
                 // Clear properties panel
                 const propertiesPanel = document.getElementById('element-properties');
                 propertiesPanel.innerHTML = '<h3>Properties</h3><div id="no-selection-message">Select an element to edit its properties</div>';
-                
+
                 updateSvgPreview();
                 updateElementsList();
             }
@@ -1161,13 +1558,13 @@
         function updateSvgPreview() {
             const width = document.getElementById('width').value || 400;
             const height = document.getElementById('height').value || 400;
-            
+
             // Generate SVG code
             let svgCode = `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
-            
+
             // Add elements
             svgElements.forEach(element => {
-                switch(element.type) {
+                switch (element.type) {
                     case 'text':
                         svgCode += `
                             <text 
@@ -1230,23 +1627,23 @@
                         break;
                 }
             });
-            
+
             svgCode += '</svg>';
-            
+
             // Update code textarea
             const codeTextarea = document.getElementById('svg-code');
             codeTextarea.value = svgCode;
-            
+
             // Render SVG to canvas
             renderSvgToCanvas(svgCode, width, height);
-            
+
             // Update API URL
             updateApiUrl(svgCode);
-            
+
             // Update content length display
             updateContentLength();
         }
-        
+
         function renderSvgToCanvas(svgCode, width, height) {
             try {
                 // Sanitize SVG for rendering
@@ -1254,46 +1651,46 @@
                 if (!svgCode.includes('xmlns=')) {
                     svgCode = svgCode.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
                 }
-                
+
                 // Create SVG blob
                 const svgBlob = new Blob([svgCode], { type: 'image/svg+xml' });
                 const svgUrl = URL.createObjectURL(svgBlob);
-                
+
                 // Get canvas and set dimensions
                 const canvas = document.getElementById('preview-canvas');
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                
+
                 // Clear canvas with white background
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, width, height);
-                
+
                 // Load and draw SVG on canvas
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     ctx.drawImage(img, 0, 0, width, height);
                     URL.revokeObjectURL(svgUrl); // Clean up
                 };
-                
-                img.onerror = function(e) {
+
+                img.onerror = function (e) {
                     console.error('Error loading SVG into canvas:', e);
-                    console.log('SVG code causing error:', svgCode);
-                    
+                    console.error('SVG code causing error:', svgCode);
+
                     // Draw error message on canvas
                     ctx.fillStyle = '#ffe6e6';
                     ctx.fillRect(0, 0, width, height);
                     ctx.font = '14px Arial';
                     ctx.fillStyle = 'red';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Error rendering SVG', width/2, height/2);
+                    ctx.fillText('Error rendering SVG', width / 2, height / 2);
                     URL.revokeObjectURL(svgUrl); // Clean up
                 };
-                
+
                 img.src = svgUrl;
             } catch (error) {
                 console.error('Error in renderSvgToCanvas:', error);
-                
+
                 // Draw error message on canvas
                 const canvas = document.getElementById('preview-canvas');
                 const ctx = canvas.getContext('2d');
@@ -1302,16 +1699,16 @@
                 ctx.font = '14px Arial';
                 ctx.fillStyle = 'red';
                 ctx.textAlign = 'center';
-                ctx.fillText('Error processing SVG', width/2, height/2);
+                ctx.fillText('Error processing SVG', width / 2, height / 2);
             }
         }
 
         function updateContentLength() {
             const apiUrl = apiUrlInput.value;
             const length = apiUrl.length;
-            
+
             document.getElementById('contentLength').textContent = length;
-            
+
             if (length > 2000) {
                 document.getElementById('contentLengthWarning').style.display = 'block';
             } else {
@@ -1326,25 +1723,230 @@
             link.href = image;
             link.download = 'image.png';
             link.click();
+            showToast('Image downloaded successfully');
         }
 
         function updateApiUrl(svgString) {
             const compressedContent = LZString.compressToEncodedURIComponent(svgString);
-            
+
             // Update API URL input
             apiUrlInput.value = compressedContent
         }
 
-        async function copyApiUrl() {
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' :
+                type === 'error' ? 'fas fa-exclamation-circle' :
+                    'fas fa-exclamation-triangle';
+
+            const text = document.createElement('span');
+            text.textContent = message;
+
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            toastContainer.appendChild(toast);
+
+            // Remove toast after animation
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        async function copyApiUrl(urlType) {
             try {
-                let fullUrl = baseUrlLabel.textContent + apiUrlInput.value;
+                const urlParams = new URLSearchParams(window.location.search);
+                const imageId = urlParams.get('image');
+                const templateId = urlParams.get('template');
+                // extract {paramX} from svgCodeLabel.value
+                const svgCode = svgCodeLabel.value;
+                const params = svgCode.match(/{(param\d+)}/g);
+                let fullUrl;
+                if (templateId) {
+                    fullUrl = baseUrlLabel.textContent + (urlType ?? "png") + "/" + templateId + "/" + params.map(param => param.replace('{', '').replace('}', '')).join('/');
+                } else {
+                    if (params && params.length > 0) {
+                        console.error('Sorry, right now new templates only works for members');
+                        showToast('Sorry, right now new templates only works for members', 'error');
+                        return;
+                    } else {
+                        fullUrl = baseUrlLabel.textContent + (urlType ?? "png") + "/" + apiUrlInput.value;
+                    }
+                }
                 await navigator.clipboard.writeText(fullUrl);
-                copyMessage.style.display = 'block';
-                setTimeout(() => {
-                    copyMessage.style.display = 'none';
-                }, 2000);
+                showToast('URL copied to clipboard!');
             } catch (err) {
                 console.error('Failed to copy text: ', err);
+                showToast('Failed to copy URL', 'error');
+            }
+        }
+
+        // Function to parse SVG string into elements array
+        function parseSvgToElements(svgContent) {
+            const elements = [];
+            try {
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+
+                // Extract elements
+                const elementTypes = ['text', 'image', 'rect', 'circle', 'path'];
+                elementTypes.forEach(type => {
+                    const svgElements = svgDoc.querySelectorAll(type);
+                    let id = 0;
+                    svgElements.forEach(el => {
+                        const newElement = { type, id: el.id || `${type}_${id}` };
+                        id++;
+
+                        // Copy attributes based on element type
+                        switch (type) {
+                            case 'text':
+                                newElement.x = parseFloat(el.getAttribute('x') || 0);
+                                newElement.y = parseFloat(el.getAttribute('y') || 0);
+                                newElement.text = el.textContent || 'Text';
+                                newElement.fontSize = parseFloat(el.getAttribute('font-size') || 24);
+                                newElement.fontFamily = el.getAttribute('font-family') || 'Arial';
+                                newElement.fill = el.getAttribute('fill');
+                                newElement.textAnchor = el.getAttribute('text-anchor') || 'start';
+                                break;
+                            case 'image':
+                                newElement.x = parseFloat(el.getAttribute('x') || 0);
+                                newElement.y = parseFloat(el.getAttribute('y') || 0);
+                                newElement.width = parseFloat(el.getAttribute('width') || 100);
+                                newElement.height = parseFloat(el.getAttribute('height') || 100);
+                                newElement.href = el.getAttribute('href') || '';
+                                break;
+                            case 'rect':
+                                newElement.x = parseFloat(el.getAttribute('x') || 0);
+                                newElement.y = parseFloat(el.getAttribute('y') || 0);
+                                newElement.width = parseFloat(el.getAttribute('width') || 100);
+                                newElement.height = parseFloat(el.getAttribute('height') || 100);
+                                newElement.fill = el.getAttribute('fill');
+                                newElement.stroke = el.getAttribute('stroke');
+                                newElement.strokeWidth = parseFloat(el.getAttribute('stroke-width') || 2);
+                                newElement.rx = parseFloat(el.getAttribute('rx') || 5);
+                                newElement.ry = parseFloat(el.getAttribute('ry') || 5);
+                                break;
+                            case 'circle':
+                                newElement.cx = parseFloat(el.getAttribute('cx') || 100);
+                                newElement.cy = parseFloat(el.getAttribute('cy') || 100);
+                                newElement.r = parseFloat(el.getAttribute('r') || 50);
+                                newElement.fill = el.getAttribute('fill');
+                                newElement.stroke = el.getAttribute('stroke');
+                                newElement.strokeWidth = parseFloat(el.getAttribute('stroke-width') || 2);
+                                break;
+                            case 'path':
+                                newElement.d = el.getAttribute('d') || '';
+                                newElement.fill = el.getAttribute('fill');
+                                newElement.stroke = el.getAttribute('stroke');
+                                newElement.strokeWidth = parseFloat(el.getAttribute('stroke-width') || 2);
+                                break;
+                        }
+
+                        elements.push(newElement);
+                    });
+                });
+
+                return elements;
+            } catch (error) {
+                console.error('Error parsing SVG elements:', error);
+                throw error;
+            }
+        }
+
+        // Load collage from URL parameter
+        async function loadCollageFromId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const imageId = urlParams.get('image');
+            const templateId = urlParams.get('template');
+
+            if (imageId) {
+                try {
+                    const response = await fetch(`/api/collages/${imageId}`);
+                    if (response.ok) {
+                        const image = await response.json();
+
+                        // Decompress the content if it's compressed
+                        let svgContent;
+                        try {
+                            svgContent = LZString.decompressFromEncodedURIComponent(image.content);
+                            if (!svgContent) {
+                                throw new Error('Invalid compressed content');
+                            }
+                        } catch (e) {
+                            // If decompression fails, try using the content as is
+                            svgContent = image.content;
+                        }
+
+                        // Update width and height
+                        document.getElementById('width').value = image.width;
+                        document.getElementById('height').value = image.height;
+
+                        // Update SVG code
+                        document.getElementById('svg-code').value = svgContent;
+
+                        // Parse SVG elements
+                        try {
+                            svgElements = parseSvgToElements(svgContent);
+
+                            // Update elements list and preview
+                            updateElementsList();
+                            updateSvgPreview();
+
+                        } catch (parseError) {
+                            console.error('Error parsing SVG elements:', parseError);
+                            showToast('Error parsing SVG content', 'error');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading collage:', error);
+                    showToast('Error loading collage', 'error');
+                }
+            } else if (templateId) {
+                try {
+                    const response = await fetch(`/api/templates/${templateId}`);
+                    if (response.ok) {
+                        const template = await response.json();
+
+                        // Decompress the content if it's compressed
+                        let svgContent;
+                        try {
+                            svgContent = LZString.decompressFromEncodedURIComponent(template.content);
+                            if (!svgContent) {
+                                throw new Error('Invalid compressed content');
+                            }
+                        } catch (e) {
+                            // If decompression fails, try using the content as is
+                            svgContent = template.content;
+                        }
+
+                        // Update width and height
+                        document.getElementById('width').value = template.width;
+                        document.getElementById('height').value = template.height;
+
+                        // Update SVG code
+                        document.getElementById('svg-code').value = svgContent;
+
+                        // Parse SVG elements
+                        try {
+                            svgElements = parseSvgToElements(svgContent);
+
+                            // Update elements list and preview
+                            updateElementsList();
+                            updateSvgPreview();
+
+                        } catch (parseError) {
+                            console.error('Error parsing SVG elements:', parseError);
+                            showToast('Error parsing SVG content', 'error');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading template:', error);
+                    showToast('Error loading template', 'error');
+                }
             }
         }
 
@@ -1363,6 +1965,7 @@
 
                 // Update the API URL input
                 apiUrlInput.value = params;
+                showToast('Content pasted from clipboard!');
 
                 try {
                     // Parse the parameters
@@ -1375,93 +1978,59 @@
                         // Update width and height
                         document.getElementById('width').value = width;
                         document.getElementById('height').value = height;
-                        
+
                         // Update SVG code
                         document.getElementById('svg-code').value = content;
-                        document.getElementById('svg-preview').innerHTML = content;
-                        
-                        // Try to parse SVG elements (simplified version)
+
+                        // Parse SVG elements
                         try {
-                            const parser = new DOMParser();
-                            const svgDoc = parser.parseFromString(content, 'image/svg+xml');
-                            
-                            // Reset elements array
-                            svgElements = [];
-                            
-                            // Extract elements (simplified approach)
-                            const elementTypes = ['text', 'image', 'rect', 'circle', 'path'];
-                            elementTypes.forEach(type => {
-                                const elements = svgDoc.querySelectorAll(type);
-                                elements.forEach(el => {
-                                    // This is simplified and would need more logic to fully recreate the element objects
-                                    const newElement = { type, id: el.id || `${type}_${Date.now()}` };
-                                    
-                                    // Copy attributes based on element type
-                                    switch(type) {
-                                        case 'text':
-                                            newElement.x = parseFloat(el.getAttribute('x') || 0);
-                                            newElement.y = parseFloat(el.getAttribute('y') || 0);
-                                            newElement.text = el.textContent || 'Text';
-                                            newElement.fontSize = parseFloat(el.getAttribute('font-size') || 24);
-                                            newElement.fontFamily = el.getAttribute('font-family') || 'Arial';
-                                            newElement.fill = el.getAttribute('fill') || '#000000';
-                                            newElement.textAnchor = el.getAttribute('text-anchor') || 'start';
-                                            break;
-                                        // Add other element types as needed
-                                    }
-                                    
-                                    svgElements.push(newElement);
-                                });
-                            });
-                            
+                            svgElements = parseSvgToElements(content);
+                            updateElementsList();
+                            updateSvgPreview();
                         } catch (parseError) {
                             console.error('Error parsing SVG elements:', parseError);
+                            showToast('Error parsing SVG content', 'error');
                         }
-                        
-                        // Update preview
-                        updateSvgPreview();
                     }
                 } catch (error) {
                     console.error('Failed to parse clipboard content:', error);
+                    showToast('Error parsing clipboard content', 'error');
                 }
             } catch (err) {
                 console.error('Failed to read clipboard:', err);
+                showToast('Failed to read clipboard', 'error');
             }
         }
 
         function showSaveModal() {
-            document.getElementById('saveModal').style.display = 'block';
-        }
-
-        function hideSaveModal() {
-            document.getElementById('saveModal').style.display = 'none';
-        }
-
-        function checkContentLength() {
-            const content = getContentString();
-            const warning = document.getElementById('contentLengthWarning');
-            if (content.length > 2000) {
-                warning.style.display = 'block';
-                return false;
+            const svgCode = svgCodeLabel.value;
+            // Check if the SVG code contains any template parameters
+            const hasTemplateParams = /{param\d*}/.test(svgCode);
+            if (hasTemplateParams) {
+                document.getElementById('saveTemplateModal').style.display = 'block';
             } else {
-                warning.style.display = 'none';
-                return true;
+                document.getElementById('saveImageModal').style.display = 'block';
             }
         }
 
-        async function saveCollage() {
-            const name = document.getElementById('collageName').value.trim();
+        function hideSaveImageModal() {
+            document.getElementById('saveImageModal').style.display = 'none';
+        }
+
+        function hideSaveTemplateModal() {
+            document.getElementById('saveTemplateModal').style.display = 'none';
+        }
+
+        async function saveImage() {
+            const name = document.getElementById('imageName').value.trim();
             if (!name) {
-                alert('Please enter a name for your collage');
+                showToast('Please enter a name for your image', 'warning');
                 return;
             }
 
-            const width = document.getElementById('width').value;
-            const height = document.getElementById('height').value;
-            const content = getContentString();
-
-            if (!checkContentLength()) {
-                return;
+            let compressedParams = apiUrlInput.value;
+            if (compressedParams.startsWith('<svg') || compressedParams.startsWith('%3Csvg')) {
+                compressedParams = LZString.compressToEncodedURIComponent(compressedParams);
             }
 
             try {
@@ -1472,69 +2041,75 @@
                     },
                     body: JSON.stringify({
                         name,
-                        width: parseInt(width),
-                        height: parseInt(height),
-                        content
+                        content: compressedParams
                     })
                 });
 
                 if (response.ok) {
-                    hideSaveModal();
-                    alert('Collage saved successfully!');
+                    hideSaveImageModal();
+                    showToast('Image saved successfully!');
                 } else {
                     const error = await response.json();
-                    alert(error.error || 'Error saving collage');
+                    showToast(error.error || 'Error saving image', 'error');
                 }
             } catch (error) {
-                console.error('Error saving collage:', error);
-                alert('Error saving collage');
+                console.error('Error saving image:', error);
+                showToast('Error saving image', 'error');
             }
         }
 
-        // Load collage from URL parameter
-        async function loadCollageFromId() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-
-            if (id) {
-                try {
-                    const response = await fetch(`/api/collages/${id}`);
-                    if (response.ok) {
-                        const collage = await response.json();
-                        console.log("collage ======> ", collage);
-                    }
-                } catch (error) {
-                    console.error('Error loading collage:', error);
-                }
+        async function saveTemplate() {
+            const id = document.getElementById('templateId').value.trim();
+            if (!id) {
+                showToast('Please enter a name for your image', 'warning');
+                return;
             }
-        }
 
-        // Load collage from URL parameter when page loads
-        document.addEventListener('DOMContentLoaded', loadCollageFromId);
-
-        function showQRModal() {
             let compressedParams = apiUrlInput.value;
             if (compressedParams.startsWith('<svg') || compressedParams.startsWith('%3Csvg')) {
                 compressedParams = LZString.compressToEncodedURIComponent(compressedParams);
             }
-            console.log("params ======> ", compressedParams);
-            // First save the QR content to get an ID
-            fetch(`/qr/${compressedParams}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
+
+            try {
+                const response = await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id,
+                        content: compressedParams
+                    })
+                });
+
+                if (response.ok) {
+                    hideSaveTemplateModal();
+                    showToast('Template saved successfully!');
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Error saving template', 'error');
                 }
-                console.log("data id ======> ", data.id);
+            } catch (error) {
+                console.error('Error saving template:', error);
+                showToast('Error saving template', 'error');
+            }
+        }
+
+        function showQRModal() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const imageId = urlParams.get('image');
+            const templateId = urlParams.get('template');
+            // extract {paramX} from svgCodeLabel.value
+            const svgCode = svgCodeLabel.value;
+            const params = svgCode.match(/{(param\d+)}/g);
+            if (templateId) {
                 // Generate QR code with the returned ID
-                const qrUrl = `${window.location.origin}/qr/${data.id}`;
-                
+                const qrUrl = `${window.location.origin}/image/${templateId}/${params.map(param => param.replace('{', '').replace('}', '')).join('/')}`;
+
                 // Initialize QR code with styling
                 const qrCodeElement = document.getElementById('qrCode');
                 qrCodeElement.innerHTML = ''; // Clear previous QR code
-                
+
                 qrCode = new QRCodeStyling({
                     width: 400,
                     height: 400,
@@ -1562,14 +2137,78 @@
                     },
                     image: '/pi-co.png'
                 });
-                
+
                 qrCode.append(qrCodeElement);
                 document.getElementById('qrModal').style.display = 'block';
-            })
-            .catch(error => {
-                console.error('Error generating QR code:', error);
-                alert('Failed to generate QR code. Please try again.');
-            });
+            } else {
+                if (params && params.length > 0) {
+                    console.error('Sorry, right now new templates only works for members');
+                    showToast('Sorry, right now new templates only works for members', 'error');
+                    return;
+                } else {
+                    let compressedParams = apiUrlInput.value;
+                    if (compressedParams.startsWith('<svg') || compressedParams.startsWith('%3Csvg')) {
+                        compressedParams = LZString.compressToEncodedURIComponent(compressedParams);
+                    }
+                    // First save the QR content to get an ID
+                    fetch(`/qr`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content: compressedParams
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                throw new Error(data.error);
+                            }
+                            // Generate QR code with the returned ID
+                            const qrUrl = `${window.location.origin}/qr/${data.id}`;
+
+                            // Initialize QR code with styling
+                            const qrCodeElement = document.getElementById('qrCode');
+                            qrCodeElement.innerHTML = ''; // Clear previous QR code
+
+                            qrCode = new QRCodeStyling({
+                                width: 400,
+                                height: 400,
+                                data: qrUrl,
+                                margin: 10,
+                                dotsOptions: {
+                                    color: '#6f5c4b',
+                                    type: 'rounded'
+                                },
+                                cornersSquareOptions: {
+                                    // type: 'none',
+                                    color: '#6f5c4b'
+                                },
+                                cornersDotOptions: {
+                                    // type: 'none',
+                                    color: '#6f5c4b'
+                                },
+                                backgroundOptions: {
+                                    color: '#ffffff'
+                                },
+                                imageOptions: {
+                                    crossOrigin: 'anonymous',
+                                    margin: 8,
+                                    imageSize: 0.3
+                                },
+                                image: '/pi-co.png'
+                            });
+
+                            qrCode.append(qrCodeElement);
+                            document.getElementById('qrModal').style.display = 'block';
+                        })
+                        .catch(error => {
+                            console.error('Error generating QR code:', error);
+                            alert('Failed to generate QR code. Please try again.');
+                        });
+                }
+            }
         }
 
         function hideQRModal() {

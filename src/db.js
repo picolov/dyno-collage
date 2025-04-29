@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 // Initialize database
-const db = new sqlite3.Database(path.join(process.cwd(), 'collages.db'));
+const db = new sqlite3.Database(path.join(process.cwd(), 'compose.db'));
 
 // Create tables if they don't exist
 db.serialize(() => {
@@ -18,6 +18,17 @@ db.serialize(() => {
             height INTEGER NOT NULL,
             content TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS templates (
+            id TEXT PRIMARY KEY,
+            width INTEGER NOT NULL,
+            height INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
 
@@ -60,10 +71,9 @@ const dbOperations = {
                 query += `
                     WHERE name LIKE ? 
                     OR width LIKE ? 
-                    OR height LIKE ? 
-                    OR content LIKE ?
+                    OR height LIKE ?
                 `;
-                params = [searchTerm, searchTerm, searchTerm, searchTerm];
+                params = [searchTerm, searchTerm, searchTerm];
             }
 
             query += `
@@ -78,12 +88,11 @@ const dbOperations = {
                 countQuery += `
                     WHERE name LIKE ? 
                     OR width LIKE ? 
-                    OR height LIKE ? 
-                    OR content LIKE ?
+                    OR height LIKE ?
                 `;
             }
 
-            db.get(countQuery, search ? [searchTerm, searchTerm, searchTerm, searchTerm] : [], (err, countResult) => {
+            db.get(countQuery, search ? [searchTerm, searchTerm, searchTerm] : [], (err, countResult) => {
                 if (err) {
                     reject(err);
                     return;
@@ -103,7 +112,7 @@ const dbOperations = {
         });
     },
 
-    getTotalCount: (search = '') => {
+    getCollagesTotalCount: (search = '') => {
         return new Promise((resolve, reject) => {
             let query = 'SELECT COUNT(*) as total FROM collages';
             let params = [];
@@ -114,10 +123,9 @@ const dbOperations = {
                 query += `
                     WHERE name LIKE ? 
                     OR width LIKE ? 
-                    OR height LIKE ? 
-                    OR content LIKE ?
+                    OR height LIKE ?
                 `;
-                params = [searchTerm, searchTerm, searchTerm, searchTerm];
+                params = [searchTerm, searchTerm, searchTerm];
             }
 
             db.get(query, params, (err, result) => {
@@ -144,6 +152,145 @@ const dbOperations = {
         return new Promise((resolve, reject) => {
             db.run(
                 'DELETE FROM collages WHERE id = ?',
+                [id],
+                (err) => {
+                    if (err) reject(err);
+                    else resolve({ success: true });
+                }
+            );
+        });
+    },
+
+    saveTemplate: (id, width, height, content) => {
+        return new Promise((resolve, reject) => {
+            // First try to find existing template
+            db.get('SELECT id FROM templates WHERE id = ?', [id], (err, row) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                if (row) {
+                    // Update existing template
+                    db.run(
+                        'UPDATE templates SET width = ?, height = ?, content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                        [width, height, content, id],
+                        function(err) {
+                            if (err) reject(err);
+                            else resolve({ id });
+                        }
+                    );
+                } else {
+                    // Insert new template
+                    db.run(
+                        'INSERT INTO templates (id, width, height, content) VALUES (?, ?, ?, ?)',
+                        [id, width, height, content],
+                        function(err) {
+                            if (err) reject(err);
+                            else resolve({ id });
+                        }
+                    );
+                }
+            });
+        });
+    },
+
+    getAllTemplates: (page = 1, pageSize = 12, search = '') => {
+        return new Promise((resolve, reject) => {
+            const offset = (page - 1) * pageSize;
+            let query = `
+                SELECT id, width, height, content, created_at 
+                FROM templates
+            `;
+            let params = [];
+            let searchTerm = '';
+
+            if (search) {
+                searchTerm = `%${search}%`;
+                query += `
+                    WHERE id LIKE ? 
+                    OR width LIKE ? 
+                    OR height LIKE ?
+                `;
+                params = [searchTerm, searchTerm, searchTerm];
+            }
+
+            query += `
+                ORDER BY created_at DESC
+                LIMIT ? OFFSET ?
+            `;
+            params.push(pageSize, offset);
+
+            // Get total count
+            let countQuery = 'SELECT COUNT(*) as total FROM templates';
+            if (search) {
+                countQuery += `
+                    WHERE id LIKE ? 
+                    OR width LIKE ? 
+                    OR height LIKE ?
+                `;
+            }
+
+            db.get(countQuery, search ? [searchTerm, searchTerm, searchTerm] : [], (err, countResult) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                db.all(query, params, (err, rows) => {
+                    if (err) reject(err);
+                    else resolve({
+                        templates: rows,
+                        total: countResult.total,
+                        page,
+                        pageSize,
+                        totalPages: Math.ceil(countResult.total / pageSize)
+                    });
+                });
+            });
+        });
+    },
+
+    getTemplatesTotalCount: (search = '') => {
+        return new Promise((resolve, reject) => {
+            let query = 'SELECT COUNT(*) as total FROM templates';
+            let params = [];
+            let searchTerm = '';
+
+            if (search) {
+                searchTerm = `%${search}%`;
+                query += `
+                    WHERE id LIKE ? 
+                    OR width LIKE ? 
+                    OR height LIKE ?
+                `;
+                params = [searchTerm, searchTerm, searchTerm];
+            }
+
+            db.get(query, params, (err, result) => {
+                if (err) reject(err);
+                else resolve(result.total);
+            });
+        });
+    },
+
+    getTemplateById: (id) => {
+        return new Promise((resolve, reject) => {
+            db.get(
+                'SELECT id, width, height, content, created_at, updated_at FROM templates WHERE id = ?',
+                [id],
+                (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row);
+                }
+            );
+        });
+    },
+
+    deleteTemplate: (id) => {
+        return new Promise((resolve, reject) => {
+            db.run(
+                'DELETE FROM templates WHERE id = ?',
                 [id],
                 (err) => {
                     if (err) reject(err);

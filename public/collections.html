@@ -5,108 +5,172 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>pi-Collage Collections</title>
     <link rel="icon" type="image/png" href="/pi-co.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-brown: #6f5c4b;
+            --primary-brown-darker: #5a4a3c;
+            --primary-brown-lighter: #8a7663;
+            --primary-brown-light: #cfc0b3;
+            --primary-brown-lightest: #f4f0eb;
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f8f9fa;
+            background-color: white;
+            background-image: url("{{dynamic_background}}");
         }
+
         .title-container {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 20px;
         }
+
         .title-container img {
             width: 50px;
             height: auto;
         }
+
         .search-container {
             margin-bottom: 20px;
         }
+
         .search-input {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--primary-brown-light);
             border-radius: 4px;
             margin-bottom: 5px;
         }
+
         .search-input:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+            border-color: var(--primary-brown);
+            box-shadow: 0 0 0 2px var(--primary-brown-light);
         }
+
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
+
         .grid-item {
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
-            transition: transform 0.2s;
+            border: 1px solid var(--primary-brown-light);
         }
-        .grid-item:hover {
-            transform: scale(1.02);
-        }
+
         .grid-content {
             padding: 15px;
         }
+
         .grid-item h3 {
-            margin: 0 0 10px 0;
+            margin: 5px 0 5px 0;
             font-size: 1.1em;
-            color: #333;
+            color: var(--primary-brown);
             text-align: center;
         }
+
         .preview-container {
             width: 100%;
             height: 200px;
-            background: #f5f5f5;
+            background: var(--primary-brown-lightest);
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 10px;
             overflow: hidden;
+            border-bottom: 1px solid var(--primary-brown-light);
         }
+
         .preview-container canvas {
             max-width: 100%;
             max-height: 100%;
         }
+
         .grid-item p {
             margin: 5px 0;
-            color: #666;
+            color: var(--primary-brown);
             font-size: 0.9em;
             text-align: center;
+            display: inline-block;
         }
+
+        .grid-item .info-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 5px 5px;
+        }
+
         .grid-item button {
-            width: 100%;
-            padding: 8px;
-            background-color: #007bff;
-            color: white;
+            width: calc(100% - 10px);
+            margin: 10px 5px;
+            box-sizing: border-box;
+            padding: 10px;
+            background-color: #d4c4b5;
+            color: #6f5c4b;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             margin-top: 10px;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #c0b2a4;
+            transform: translateY(0);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+
         .grid-item button:hover {
-            background-color: #0056b3;
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+            transform: translateY(2px);
         }
+
+        .grid-item button:active {
+            box-shadow: 0 0 0 #c0b2a4;
+            transform: translateY(4px);
+        }
+
         .collections-link {
             margin-left: auto;
             padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
+            background-color: #d4c4b5;
+            color: #6f5c4b;
             text-decoration: none;
             border-radius: 4px;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #c0b2a4;
+            transform: translateY(0);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .collections-link:hover {
-            background-color: #0056b3;
+            background-color: #c0b2a4;
+            box-shadow: 0 2px 0 #c0b2a4;
+            transform: translateY(2px);
+            color: #6f5c4b;
         }
+
+        .collections-link:active {
+            box-shadow: 0 0 0 #c0b2a4;
+            transform: translateY(4px);
+        }
+
         .pagination {
             display: flex;
             justify-content: center;
@@ -114,74 +178,400 @@
             gap: 10px;
             margin-top: 20px;
         }
+
         .pagination button {
             padding: 8px 15px;
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
+            background-color: var(--primary-brown);
+            color: white;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 var(--primary-brown-darker);
+            transform: translateY(0);
         }
-        .pagination button:hover {
-            background-color: #e9ecef;
+
+        .pagination button:hover:not(:disabled) {
+            background-color: var(--primary-brown-darker);
+            box-shadow: 0 2px 0 var(--primary-brown-darker);
+            transform: translateY(2px);
         }
+
+        .pagination button:active:not(:disabled) {
+            box-shadow: 0 0 0 var(--primary-brown-darker);
+            transform: translateY(4px);
+        }
+
         .pagination button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            background-color: var(--primary-brown-light);
+            box-shadow: none;
         }
+
         .pagination span {
-            color: #666;
+            color: var(--primary-brown);
         }
+
         .total-count {
-            color: #666;
+            color: var(--primary-brown);
             font-size: 0.9em;
         }
+
         .flex {
             display: flex;
         }
+
         .justify-between {
             justify-content: space-between;
         }
+
         .items-center {
             align-items: center;
         }
+
         .mb-2 {
             margin-bottom: 8px;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: #fff;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast.warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+            position: relative;
+            z-index: 2;
+        }
+        .tab-button {
+            padding: 8px 20px;
+            background-color: var(--primary-brown-lightest);
+            color: var(--primary-brown);
+            border: 1px solid var(--primary-brown-light);
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .tab-button.active {
+            background-color: white;
+            color: var(--primary-brown);
+            border-bottom: 1px solid white;
+            z-index: 3;
+        }
+        .tab-content {
+            display: none;
+            border: 1px solid var(--primary-brown-light);
+            border-radius: 0 4px 4px 4px;
+            padding: 20px;
+            background-color: white;
+            position: relative;
+            z-index: 1;
+            margin-top: -1px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-container {
+            position: relative;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
+    <div class="toast-container"></div>
     <div class="title-container">
         <img src="/pi-co.png" alt="Dyno Logo">
         <h1><span style="color: #ada08a;">pi-</span>Collage Collections</h1>
-        <a href="/" class="collections-link">Create New Collage</a>
+        <a href="/" class="collections-link">
+            <i class="fas fa-edit"></i>
+            <span>Go To Editor</span>
+        </a>
     </div>
     
-    <!-- Search Bar and Count -->
-    <div class="search-container">
-        <div class="flex justify-between items-center mb-2">
-            <input type="text" id="searchInput" placeholder="Search by name, width, height, or content..." class="search-input" style="width: 90%;">
-            <span class="total-count">Total: <span id="totalCount">0</span></span>
+    <!-- Tabs -->
+    <div class="tab-container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="collages">Collages</button>
+            <button class="tab-button" data-tab="templates">Templates</button>
         </div>
-    </div>
 
-    <!-- Grid Container -->
-    <div id="gridContainer" class="grid-container">
-        <!-- Grid items will be inserted here -->
-    </div>
+        <!-- Collages Tab Content -->
+        <div id="collages-tab" class="tab-content active">
+            <!-- Search Bar and Count -->
+            <div class="search-container">
+                <div class="flex justify-between items-center mb-2">
+                    <input type="text" id="collagesSearchInput" placeholder="Search by name, width, and height" class="search-input" style="width: 90%;">
+                    <span class="total-count">Total: <span id="collagesTotalCount">0</span></span>
+                </div>
+            </div>
 
-    <!-- Pagination -->
-    <div class="pagination">
-        <button id="prevPage">Previous</button>
-        <span id="pageInfo">Page 1</span>
-        <button id="nextPage">Next</button>
+            <!-- Grid Container -->
+            <div id="collagesGridContainer" class="grid-container">
+                <!-- Grid items will be inserted here -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button id="collagesPrevPage">Previous</button>
+                <span id="collagesPageInfo">Page 1</span>
+                <button id="collagesNextPage">Next</button>
+            </div>
+        </div>
+
+        <!-- Templates Tab Content -->
+        <div id="templates-tab" class="tab-content">
+            <!-- Search Bar and Count -->
+            <div class="search-container">
+                <div class="flex justify-between items-center mb-2">
+                    <input type="text" id="templatesSearchInput" placeholder="Search by name, width, and height" class="search-input" style="width: 90%;">
+                    <span class="total-count">Total: <span id="templatesTotalCount">0</span></span>
+                </div>
+            </div>
+
+            <!-- Grid Container -->
+            <div id="templatesGridContainer" class="grid-container">
+                <!-- Grid items will be inserted here -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button id="templatesPrevPage">Previous</button>
+                <span id="templatesPageInfo">Page 1</span>
+                <button id="templatesNextPage">Next</button>
+            </div>
+        </div>
     </div>
 
     <script src="/lz-string.min.js"></script>
     <script>
-        let currentPage = 1;
-        const pageSize = 12;
-        let totalPages = 1;
-        let searchQuery = '';
+        // Add tab styles
+
+        // Tab switching functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button and corresponding content
+                button.classList.add('active');
+                document.getElementById(`${button.dataset.tab}-tab`).classList.add('active');
+                
+                // Load data for the selected tab
+                if (button.dataset.tab === 'collages') {
+                    loadCollages();
+                    updateCollagesTotalCount();
+                } else {
+                    loadTemplates();
+                    updateTemplatesTotalCount();
+                }
+            });
+        });
+
+        // Function to generate dynamic background
+        function generateDynamicBackground() {
+            const now = new Date();
+            
+            // Format date and time
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear());
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            
+            // Create array of all characters
+            const dateTimeStr = `${day}${month}${year}-${hours}${mins}${secs}`;
+            const chars = dateTimeStr.split('');
+            
+            // Number of lines equals number of characters plus one (for the last line)
+            const numLines = chars.length;
+            
+            // Create SVG for background
+            let lineElements = '';
+            let textElements = '';
+            const baseColor = '#6f5c4b';
+            
+            // Define SVG boundaries
+            const SVG_WIDTH = 200;
+            const SVG_HEIGHT = 200;
+            
+            // Calculate line height and spacing
+            const lineHeight = 1;
+            const spacing = SVG_HEIGHT / numLines;
+            
+            // Initialize or update character positions and directions
+            if (!window.charPositions) {
+                window.charPositions = {};
+            }
+            if (!window.charDirections) {
+                window.charDirections = {};
+            }
+            
+            // Generate horizontal lines with time-based positioning
+            for (let i = 0; i < numLines; i++) {
+                // Calculate y position ensuring lines are evenly spaced
+                const y = i * spacing;
+                const opacity = 0.1;
+                
+                lineElements += `<line 
+                    x1="0" 
+                    y1="${y}" 
+                    x2="${SVG_WIDTH}" 
+                    y2="${y}" 
+                    stroke="${baseColor}" 
+                    stroke-width="${lineHeight}" 
+                    stroke-opacity="${opacity}"/>`;
+                    
+                // Add text elements in the gaps between lines
+                if (i < chars.length) {
+                    const gapStart = y + lineHeight;
+                    const gapEnd = (i + 1) * spacing;
+                    const gapHeight = gapEnd - gapStart;
+                    
+                    // Position character vertically in the center of the gap
+                    const charY = gapStart + (gapHeight / 2) + 4; // +4 to center the character
+                    
+                    // Get or initialize character position and direction
+                    const charKey = `key_${i}`;
+                    if (!window.charPositions[charKey]) {
+                        window.charPositions[charKey] = 20 + (Math.random() * (SVG_WIDTH - 40));
+                        // Randomly assign initial direction (1 for right, -1 for left)
+                        window.charDirections[charKey] = Math.random() > 0.5 ? 1 : -1;
+                    
+                        // Move character by 0.1px in current direction
+                        window.charPositions[charKey] += 0.1 * window.charDirections[charKey];
+                        
+                        // Check boundaries and switch direction if needed
+                        if (window.charPositions[charKey] > SVG_WIDTH - 20) {
+                            window.charPositions[charKey] = SVG_WIDTH - 20;
+                            window.charDirections[charKey] = -1; // Switch to moving left
+                        } else if (window.charPositions[charKey] < 20) {
+                            window.charPositions[charKey] = 20;
+                            window.charDirections[charKey] = 1; // Switch to moving right
+                        }
+                    }
+                    
+                    const charX = window.charPositions[charKey];
+                    
+                    textElements += `<text 
+                        x="${charX}" 
+                        y="${charY}" 
+                        font-family="monospace" 
+                        font-size="14" 
+                        text-anchor="middle"
+                        fill="${baseColor}" 
+                        fill-opacity="0.1">${chars[i]}</text>`;
+                }
+            }
+            
+            // Create raw SVG content with lines and text
+            const svgContent = `<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                ${lineElements}
+                ${textElements}
+            </svg>`;
+            
+            // Convert SVG to data URL
+            const svgDataUrl = `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
+            
+            // Update the background style
+            document.body.style.backgroundImage = `url("${svgDataUrl}")`;
+        }
+
+        // Initialize background and update it every 100ms for smoother animation
+        generateDynamicBackground();
+        setInterval(generateDynamicBackground, 1000);
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = document.createElement('i');
+            icon.className = type === 'success' ? 'fas fa-check-circle' : 
+                            type === 'error' ? 'fas fa-exclamation-circle' : 
+                            'fas fa-exclamation-triangle';
+            
+            const text = document.createElement('span');
+            text.textContent = message;
+            
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            toastContainer.appendChild(toast);
+            
+            // Remove toast after animation
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Collages state
+        let collagesCurrentPage = 1;
+        const collagesPageSize = 12;
+        let collagesTotalPages = 1;
+        let collagesSearchQuery = '';
+
+        // Templates state
+        let templatesCurrentPage = 1;
+        const templatesPageSize = 12;
+        let templatesTotalPages = 1;
+        let templatesSearchQuery = '';
 
         // Debounce function to limit API calls
         function debounce(func, wait) {
@@ -198,40 +588,92 @@
 
         async function generatePreview(canvas, width, height, content) {
             try {
-                await window.dynoCollage.generateCollage(
-                    canvas,
-                    { width: parseInt(width), height: parseInt(height) },
-                    content.split('\n').filter(line => line.trim())
-                );
+                // Decompress the content if it's compressed
+                let svgContent;
+                try {
+                    svgContent = LZString.decompressFromEncodedURIComponent(content);
+                    if (!svgContent) {
+                        throw new Error('Invalid compressed content');
+                    }
+                } catch (e) {
+                    // If decompression fails, try using the content as is
+                    svgContent = content;
+                }
+
+                // Sanitize SVG for rendering
+                if (!svgContent.includes('xmlns=')) {
+                    svgContent = svgContent.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+                }
+
+                // Create SVG blob
+                const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+
+                // Get canvas and set dimensions
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                // Clear canvas with white background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, width, height);
+
+                // Load and draw SVG on canvas
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, width, height);
+                    URL.revokeObjectURL(svgUrl); // Clean up
+                };
+
+                img.onerror = function(e) {
+                    console.error('Error loading SVG into canvas:', e);
+                    console.error('SVG code causing error:', svgContent);
+                    
+                    // Draw error message on canvas
+                    ctx.fillStyle = '#ffe6e6';
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = 'red';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Error rendering SVG', width/2, height/2);
+                    URL.revokeObjectURL(svgUrl); // Clean up
+                    showToast('Failed to generate preview', 'error');
+                };
+
+                img.src = svgUrl;
             } catch (error) {
-                console.error('Preview generation failed:', error);
+                console.error('Error in generatePreview:', error);
+                
+                // Draw error message on canvas
                 const ctx = canvas.getContext('2d');
                 ctx.fillStyle = '#ffe6e6';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, width, height);
+                ctx.font = '14px Arial';
                 ctx.fillStyle = 'red';
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.font = '12px Arial';
-                ctx.fillText('Preview Failed', canvas.width/2, canvas.height/2);
+                ctx.fillText('Error processing SVG', width/2, height/2);
+                showToast('Failed to generate preview', 'error');
             }
         }
 
-        async function updateTotalCount() {
+        // Collages functions
+        async function updateCollagesTotalCount() {
             try {
-                const response = await fetch(`/api/collages/count?search=${encodeURIComponent(searchQuery)}`);
+                const response = await fetch(`{{project_root_url}}api/collages/count?search=${encodeURIComponent(collagesSearchQuery)}`);
                 const data = await response.json();
-                document.getElementById('totalCount').textContent = data.total;
+                document.getElementById('collagesTotalCount').textContent = data.total;
             } catch (error) {
                 console.error('Error getting total count:', error);
+                showToast('Error getting total count', 'error');
             }
         }
 
         async function loadCollages() {
             try {
-                const response = await fetch(`/api/collages?page=${currentPage}&pageSize=${pageSize}&search=${encodeURIComponent(searchQuery)}`);
+                const response = await fetch(`{{project_root_url}}api/collages?page=${collagesCurrentPage}&pageSize=${collagesPageSize}&search=${encodeURIComponent(collagesSearchQuery)}`);
                 const data = await response.json();
                 
-                const gridContainer = document.getElementById('gridContainer');
+                const gridContainer = document.getElementById('collagesGridContainer');
                 gridContainer.innerHTML = '';
 
                 data.collages.forEach(collage => {
@@ -239,14 +681,16 @@
                     gridItem.className = 'grid-item bg-white rounded-lg shadow-md overflow-hidden';
                     gridItem.innerHTML = `
                         <div class="p-4">
-                            <h3 class="text-lg font-semibold mb-2">${collage.name}</h3>
                             <div class="preview-container">
                                 <canvas id="preview-${collage.id}" width="${collage.width}" height="${collage.height}"></canvas>
                             </div>
-                            <p class="text-gray-600 mb-2">Size: ${collage.width}x${collage.height}</p>
-                            <button onclick="window.location.href='/?id=${collage.id}'" 
-                                    class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
-                                View Collage
+                            <div class="info-row">
+                                <p>${collage.name}</p>
+                                <p>(${collage.width}x${collage.height})</p>
+                            </div>
+                            <button onclick="window.location.href='/?image=${collage.id}'">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy To Editor</span>
                             </button>
                         </div>
                     `;
@@ -257,48 +701,134 @@
                     generatePreview(canvas, collage.width, collage.height, collage.content);
                 });
 
-                totalPages = Math.ceil(data.total / pageSize);
-                updatePaginationUI();
+                collagesTotalPages = Math.ceil(data.total / collagesPageSize);
+                updateCollagesPaginationUI();
             } catch (error) {
                 console.error('Error loading collages:', error);
+                showToast('Error loading collages', 'error');
             }
         }
 
-        function updatePaginationUI() {
-            const prevButton = document.getElementById('prevPage');
-            const nextButton = document.getElementById('nextPage');
-            const pageInfo = document.getElementById('pageInfo');
+        function updateCollagesPaginationUI() {
+            const prevButton = document.getElementById('collagesPrevPage');
+            const nextButton = document.getElementById('collagesNextPage');
+            const pageInfo = document.getElementById('collagesPageInfo');
 
-            prevButton.disabled = currentPage === 1;
-            nextButton.disabled = currentPage === totalPages;
-            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevButton.disabled = collagesCurrentPage === 1;
+            nextButton.disabled = collagesCurrentPage === collagesTotalPages;
+            pageInfo.textContent = `Page ${collagesCurrentPage} of ${collagesTotalPages}`;
         }
 
-        // Event Listeners
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
+        // Event Listeners for Collages
+        document.getElementById('collagesPrevPage').addEventListener('click', () => {
+            if (collagesCurrentPage > 1) {
+                collagesCurrentPage--;
                 loadCollages();
             }
         });
 
-        document.getElementById('nextPage').addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
+        document.getElementById('collagesNextPage').addEventListener('click', () => {
+            if (collagesCurrentPage < collagesTotalPages) {
+                collagesCurrentPage++;
                 loadCollages();
             }
         });
 
-        document.getElementById('searchInput').addEventListener('input', debounce((e) => {
-            searchQuery = e.target.value;
-            currentPage = 1; // Reset to first page when searching
+        document.getElementById('collagesSearchInput').addEventListener('input', debounce((e) => {
+            collagesSearchQuery = e.target.value;
+            collagesCurrentPage = 1;
             loadCollages();
-            updateTotalCount();
+            updateCollagesTotalCount();
+        }, 300));
+
+        // Templates functions
+        async function updateTemplatesTotalCount() {
+            try {
+                const response = await fetch(`{{project_root_url}}api/templates/count?search=${encodeURIComponent(templatesSearchQuery)}`);
+                const data = await response.json();
+                document.getElementById('templatesTotalCount').textContent = data.total;
+            } catch (error) {
+                console.error('Error getting total count:', error);
+                showToast('Error getting total count', 'error');
+            }
+        }
+
+        async function loadTemplates() {
+            try {
+                const response = await fetch(`{{project_root_url}}api/templates?page=${templatesCurrentPage}&pageSize=${templatesPageSize}&search=${encodeURIComponent(templatesSearchQuery)}`);
+                const data = await response.json();
+                
+                const gridContainer = document.getElementById('templatesGridContainer');
+                gridContainer.innerHTML = '';
+
+                data.templates.forEach(template => {
+                    const gridItem = document.createElement('div');
+                    gridItem.className = 'grid-item bg-white rounded-lg shadow-md overflow-hidden';
+                    gridItem.innerHTML = `
+                        <div class="p-4">
+                            <div class="preview-container">
+                                <canvas id="template-preview-${template.id}" width="${template.width}" height="${template.height}"></canvas>
+                            </div>
+                            <div class="info-row">
+                                <p>${template.id}</p>
+                                <p>(${template.width}x${template.height})</p>
+                            </div>
+                            <button onclick="window.location.href='/?template=${template.id}'">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy To Editor</span>
+                            </button>
+                        </div>
+                    `;
+                    gridContainer.appendChild(gridItem);
+
+                    // Generate preview
+                    const canvas = document.getElementById(`template-preview-${template.id}`);
+                    generatePreview(canvas, template.width, template.height, template.content);
+                });
+
+                templatesTotalPages = Math.ceil(data.total / templatesPageSize);
+                updateTemplatesPaginationUI();
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                showToast('Error loading templates', 'error');
+            }
+        }
+
+        function updateTemplatesPaginationUI() {
+            const prevButton = document.getElementById('templatesPrevPage');
+            const nextButton = document.getElementById('templatesNextPage');
+            const pageInfo = document.getElementById('templatesPageInfo');
+
+            prevButton.disabled = templatesCurrentPage === 1;
+            nextButton.disabled = templatesCurrentPage === templatesTotalPages;
+            pageInfo.textContent = `Page ${templatesCurrentPage} of ${templatesTotalPages}`;
+        }
+
+        // Event Listeners for Templates
+        document.getElementById('templatesPrevPage').addEventListener('click', () => {
+            if (templatesCurrentPage > 1) {
+                templatesCurrentPage--;
+                loadTemplates();
+            }
+        });
+
+        document.getElementById('templatesNextPage').addEventListener('click', () => {
+            if (templatesCurrentPage < templatesTotalPages) {
+                templatesCurrentPage++;
+                loadTemplates();
+            }
+        });
+
+        document.getElementById('templatesSearchInput').addEventListener('input', debounce((e) => {
+            templatesSearchQuery = e.target.value;
+            templatesCurrentPage = 1;
+            loadTemplates();
+            updateTemplatesTotalCount();
         }, 300));
 
         // Initial load
         loadCollages();
-        updateTotalCount();
+        updateCollagesTotalCount();
     </script>
 </body>
 </html> 
